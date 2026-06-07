@@ -73,8 +73,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .ac{padding:12px 8px;text-align:center;border-right:0.5px solid rgba(0,0,0,0.07)}
 .ac:last-child{border-right:none}
 .ac-label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px}
-.ac-num{font-size:26px;font-weight:700;color:#0F6E56}
-.ac-num.zero{color:#bbb;font-size:22px}
+.ac-num-wrap{display:flex;align-items:baseline;justify-content:center;gap:4px;flex-wrap:wrap;min-height:38px}
+.ac-num-main{font-size:26px;font-weight:700;color:#0F6E56;line-height:1}
+.ac-num-main.zero{color:#bbb;font-size:22px}
+.ac-badge{font-size:11px;font-weight:700;padding:2px 5px;border-radius:8px;line-height:1.4;white-space:nowrap}
+.ac-badge.early{background:#EAF3DE;color:#3B6D11;border:1px solid #639922}
+.ac-badge.late{background:#FAEEDA;color:#854F0B;border:1px solid #BA7517}
 .ac-names{padding:4px 12px 10px;display:flex;flex-wrap:wrap;gap:4px}
 .ntag{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
 .ntag.on{background:#E1F5EE;color:#0F6E56}
@@ -452,20 +456,21 @@ function renderAdmin(s){
   days.forEach((day,idx)=>{
     const dk=dayKey(day);
     const entries=getAllForDay(s,dk,day);
-    const counts={almuerzo:0,cena:0,desayuno:0};
+    const counts={almuerzo:{on:0,early:0,late:0},cena:{on:0,early:0,late:0},desayuno:{on:0,early:0,late:0}};
     const names={almuerzo:[],cena:[],desayuno:[]};
     entries.forEach(e=>{
       MEALS_ADMIN.forEach(m=>{
         const st=(e[m]&&e[m].state)||'off';
         if(st!=='off'){
-          counts[m]++;
+          counts[m][st]=(counts[m][st]||0)+1;
           const t=e[m].time||getDefaultTime(day,m,st);
-          const extra=st!=='on'?` (${STATE_LABEL[st]} ${t})`:'';
+          const extra=st!=='on'?` (${st==='early'?'temp.':'tarde'} ${t})`:'';
           names[m].push({label:e.name+extra, name:e.name});
         }
       });
     });
-    const total=counts.almuerzo+counts.cena+counts.desayuno;
+    const totalFor=m=>counts[m].on+counts[m].early+counts[m].late;
+    const total=totalFor('almuerzo')+totalFor('cena')+totalFor('desayuno');
     const note=(s.dayNotes&&s.dayNotes[dk])||'';
 
     // día siguiente para el desayuno
@@ -479,9 +484,14 @@ function renderAdmin(s){
       </div>
       <div class="admin-counts">`;
     MEALS_ADMIN.forEach(m=>{
+      const ton=counts[m].on, tep=counts[m].early, trd=counts[m].late;
+      const ttl=totalFor(m);
+      let numHtml=`<span class="ac-num-main ${ttl===0?'zero':''}">${ton}</span>`;
+      if(tep>0) numHtml+=`<span class="ac-badge early">+${tep}&#x2B06;</span>`;
+      if(trd>0) numHtml+=`<span class="ac-badge late">+${trd}&#x2B07;</span>`;
       html+=`<div class="ac">
         <div class="ac-label">${MEAL_ICON[m]} ${m}</div>
-        <div class="ac-num ${counts[m]===0?'zero':''}">${counts[m]}</div>
+        <div class="ac-num-wrap">${numHtml}</div>
       </div>`;
     });
     html+=`</div>`;
