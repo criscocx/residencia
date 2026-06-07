@@ -182,17 +182,52 @@ function initS(name){ const s={userName:name,bookings:{},dayNotes:{},guests:[],g
 /* ── helpers ── */
 function get7Days(){ const d=new Date(),r=[]; for(let i=0;i<7;i++){ const x=new Date(d); x.setDate(d.getDate()+i); r.push(x); } return r; }
 function dayKey(d){ return d.toISOString().slice(0,10); }
+function getDeadline(date){
+  // Devuelve {h, m} del deadline según día de semana
+  const dow=date.getDay();
+  if(dow===0) return {h:10,m:0};   // domingo
+  if(dow===6) return {h:9,m:15};   // sábado
+  return {h:8,m:30};               // lunes-viernes
+}
 function isLocked(date){
   const now=new Date();
   const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const tgt=new Date(date.getFullYear(),date.getMonth(),date.getDate());
   if(tgt<today) return true;
-  if(tgt.getTime()===today.getTime()&&(now.getHours()>8||(now.getHours()===8&&now.getMinutes()>=15))) return true;
+  if(tgt.getTime()===today.getTime()){
+    const dl=getDeadline(now);
+    if(now.getHours()>dl.h||(now.getHours()===dl.h&&now.getMinutes()>=dl.m)) return true;
+  }
   return false;
 }
 function fmtDate(d){ return DAYS_ES[d.getDay()]+' '+d.getDate()+' de '+MONTHS_ES[d.getMonth()]; }
 function initials(n){ return n.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2); }
 function nextState(cur){ return STATES[(STATES.indexOf(cur)+1)%STATES.length]; }
+
+// Paleta de 12 colores acuosos, uno por usuario
+const COLOR_PALETTE = [
+  {bg:'#E1F5EE',border:'#1D9E75',text:'#0F6E56'},
+  {bg:'#E8F0FB',border:'#5B8DEF',text:'#2355B0'},
+  {bg:'#FEF3E2',border:'#E8A838',text:'#8A5E00'},
+  {bg:'#F3E8FB',border:'#A855D4',text:'#6B1FAF'},
+  {bg:'#E8F7FA',border:'#29B6D4',text:'#0A7A94'},
+  {bg:'#FDE8EE',border:'#E8557A',text:'#A0194A'},
+  {bg:'#EAF3DE',border:'#639922',text:'#3B6D11'},
+  {bg:'#FFF0E8',border:'#E87A2A',text:'#8A3D00'},
+  {bg:'#E8EEF7',border:'#5B7FBF',text:'#1E3F7A'},
+  {bg:'#F7E8F0',border:'#C45B8D',text:'#7A1A4A'},
+  {bg:'#E8F5F0',border:'#3BAF85',text:'#0D6B50'},
+  {bg:'#F5F0E8',border:'#B09050',text:'#6B5500'},
+];
+const _colorMap={};
+let _colorIdx=0;
+function colorForName(name){
+  if(!_colorMap[name]){
+    _colorMap[name]=COLOR_PALETTE[_colorIdx % COLOR_PALETTE.length];
+    _colorIdx++;
+  }
+  return _colorMap[name];
+}
 
 /* ── API vía JSONP (evita CORS con Google Apps Script) ── */
 let _cbCounter = 0;
@@ -295,8 +330,9 @@ function doSetup(){
 
 function renderApp(s){
   const now=new Date();
-  const todayLocked=(now.getHours()>8||(now.getHours()===8&&now.getMinutes()>=15));
-  const minsLeft=(8*60+15)-(now.getHours()*60+now.getMinutes());
+  const dl=getDeadline(now);
+  const todayLocked=(now.getHours()>dl.h||(now.getHours()===dl.h&&now.getMinutes()>=dl.m));
+  const minsLeft=(dl.h*60+dl.m)-(now.getHours()*60+now.getMinutes());
   let html=`
     <div class="topbar">
       <div class="logo">🍽 Residencia</div>
@@ -314,8 +350,8 @@ function renderApp(s){
     <div class="deadline-bar ${todayLocked?'locked':'open'}">
       <i class="ti ti-${todayLocked?'lock':'clock'}"></i>
       ${todayLocked
-        ? 'Deadline pasado — edición cerrada para hoy (8:15 am)'
-        : `Deadline hoy a las 8:15 am — faltan <strong>${minsLeft} min</strong>`}
+        ? \`Deadline pasado — edición cerrada para hoy (\${dl.h}:\${String(dl.m).padStart(2,'0')} am)\`
+        : \`Deadline hoy a las \${dl.h}:\${String(dl.m).padStart(2,'0')} am — faltan <strong>\${minsLeft} min</strong>\`}
     </div>
     <div class="sync-bar" id="sync-bar"><span>Cargando…</span></div>`;
 
@@ -425,7 +461,7 @@ function renderAdmin(s){
           counts[m]++;
           const t=e[m].time||getDefaultTime(day,m,st);
           const extra=st!=='on'?` (${STATE_LABEL[st]} ${t})`:'';
-          names[m].push({label:e.name+extra, st});
+          names[m].push({label:e.name+extra, name:e.name});
         }
       });
     });
@@ -454,7 +490,10 @@ function renderAdmin(s){
     const verbos = {almuerzo:'Almuerzan', cena:'Cenan', desayuno:`Desayunan (${nextDayLabel})`};
     MEALS_ADMIN.forEach(m=>{
       if(names[m].length){
-        const lista=names[m].map(n=>`<span class="ntag ${n.st}">${n.label}</span>`).join(' ');
+        const lista=names[m].map(n=>{
+          const c=colorForName(n.name);
+          return `<span class="ntag" style="background:${c.bg};border:1px solid ${c.border};color:${c.text}">${n.label}</span>`;
+        }).join(' ');
         html+=`<div class="admin-meal-line">
           <span class="admin-meal-verb">${verbos[m]}:</span>
           <span class="admin-meal-tags">${lista}</span>
@@ -462,7 +501,20 @@ function renderAdmin(s){
       }
     });
 
-    if(note) html+=`<div class="day-note-admin"><i class="ti ti-pencil"></i> ${note}</div>`;
+    // Notas con autor: recoger nota de cada usuario del remoteData + local
+    const notasConAutor=[];
+    const allUsersForNotes=new Set(Object.keys(remoteData));
+    allUsersForNotes.add(s.userName);
+    allUsersForNotes.forEach(usuario=>{
+      const uDay=(usuario===s.userName)
+        ? {nota:(s.dayNotes&&s.dayNotes[dk])||''}
+        : ((remoteData[usuario]&&remoteData[usuario][dk])||{});
+      const n=(uDay.nota||'').trim();
+      if(n) notasConAutor.push('<strong>'+usuario+':</strong> '+n);
+    });
+    if(notasConAutor.length){
+      html+=`<div class="day-note-admin"><i class="ti ti-pencil"></i> `+notasConAutor.join(' &nbsp;·&nbsp; ')+`</div>`;
+    }
     html+=`</div>`;
   });
   return html;
