@@ -140,6 +140,36 @@ const MONTHS_ES   = ['enero','febrero','marzo','abril','mayo','junio','julio','a
 
 let currentTab = 'mi-vista';
 let remoteData  = {};
+
+// Normalizar cualquier fecha a YYYY-MM-DD (por si el Sheet devuelve formato largo)
+function normalizeFecha(f){
+  if(!f) return '';
+  f = String(f).trim();
+  // Ya está en formato correcto
+  if(/^\d{4}-\d{2}-\d{2}$/.test(f)) return f;
+  // Formato largo: "Mon Jun 08 2026 00:00:00..."
+  const d = new Date(f);
+  if(!isNaN(d.getTime())){
+    const y=d.getFullYear();
+    const m=String(d.getMonth()+1).padStart(2,'0');
+    const dy=String(d.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+dy;
+  }
+  return f;
+}
+
+// Normalizar remoteData: convertir todas las fechas a YYYY-MM-DD
+function normalizeRemoteData(raw){
+  const out={};
+  Object.keys(raw).forEach(usuario=>{
+    out[usuario]={};
+    Object.keys(raw[usuario]).forEach(fecha=>{
+      const fNorm=normalizeFecha(fecha);
+      out[usuario][fNorm]=raw[usuario][fecha];
+    });
+  });
+  return out;
+}
 let syncStatus  = 'idle';
 let lastSync    = null;
 let saveTimers  = {};
@@ -202,7 +232,7 @@ function jsonp(params){
 async function loadRemote(){
   syncStatus='loading'; renderSyncBar();
   const res = await jsonp({action:'load'});
-  if(res.ok){ remoteData=res.data||{}; lastSync=new Date(); syncStatus='ok'; }
+  if(res.ok){ remoteData=normalizeRemoteData(res.data||{}); lastSync=new Date(); syncStatus='ok'; }
   else { syncStatus='error'; }
   renderSyncBar();
   render();
