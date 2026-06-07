@@ -352,20 +352,28 @@ function renderMiVista(s){
 /* ── Admin ── */
 function getAllForDay(s,dk,dayObj){
   const result=[];
-  // Todos los usuarios: remotos + el propio (datos locales tienen prioridad por ser más frescos)
+  // Usar SOLO datos remotos para que todos vean a todos
+  // El usuario propio: si ya sincronizó, está en remoteData; si no, usar local como fallback
   const allUsers=new Set(Object.keys(remoteData));
-  allUsers.add(s.userName);
+  allUsers.add(s.userName); // garantizar que el propio aparece siempre
   allUsers.forEach(usuario=>{
-    const dayData = usuario===s.userName
-      ? (s.bookings[dk]||{})
-      : ((remoteData[usuario]&&remoteData[usuario][dk])||{});
+    // Para el usuario actual: preferir remoteData (lo que el Sheet tiene),
+    // pero si no existe aún en remote, usar local como fallback
+    const remoteDay=(remoteData[usuario]&&remoteData[usuario][dk])||null;
+    const localDay=(usuario===s.userName)?(s.bookings[dk]||{}):null;
+    const dayData=remoteDay||localDay||{};
     const entry={name:usuario,isGuest:false};
     MEALS_ADMIN.forEach(m=>{ entry[m]=dayData[m]||{state:'off'}; });
     result.push(entry);
   });
+  // Invitados: están guardados en el Sheet con nombre "X (inv.)"
+  // También los mostramos desde remoteData automáticamente arriba.
+  // Los invitados locales aún no sincronizados:
   (s.guests||[]).forEach(g=>{
+    const gKey=g.name+' (inv.)';
+    if(allUsers.has(gKey)) return; // ya incluido desde remoteData
     const gb=(s.guestBookings[dk]||{})[g.id]||{};
-    const ge={name:g.name,isGuest:true,id:g.id};
+    const ge={name:g.name+' (inv.)',isGuest:true};
     MEALS_ADMIN.forEach(m=>{ ge[m]=gb[m]||{state:'off'}; });
     result.push(ge);
   });
