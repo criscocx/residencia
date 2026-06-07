@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<title>Residencia · Comensales</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;background:#f5f5f3;color:#1a1a1a;min-height:100vh}
+.app{max-width:700px;margin:0 auto;padding:0.75rem}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.logo{font-size:16px;font-weight:600;color:#0F6E56}
+.user-pill{display:flex;align-items:center;gap:6px;background:#fff;border:0.5px solid rgba(0,0,0,0.15);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;user-select:none}
+.user-pill:active{background:#f0f0ee}
+.avatar{width:24px;height:24px;border-radius:50%;background:#E1F5EE;color:#0F6E56;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tab-bar{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{padding:6px 14px;border-radius:20px;border:0.5px solid rgba(0,0,0,0.15);background:#fff;cursor:pointer;font-size:13px;color:#666;user-select:none}
+.tab:active{opacity:0.8}
+.tab.active{background:#0F6E56;color:#fff;border-color:#0F6E56}
+.deadline-bar{border-radius:8px;padding:8px 12px;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;font-size:13px}
+.deadline-bar.open{background:#FAEEDA;border:0.5px solid #BA7517;color:#BA7517}
+.deadline-bar.locked{background:#FCEBEB;border:0.5px solid #A32D2D;color:#A32D2D}
+.sync-bar{background:#fff;border:0.5px solid rgba(0,0,0,0.12);border-radius:8px;padding:6px 12px;margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#666}
+.sync-btn{background:none;border:none;color:#0F6E56;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px}
+.sync-btn:active{background:#E1F5EE}
+.sync-ok{color:#0F6E56}
+.sync-err{color:#A32D2D}
+.sync-spin{display:inline-block;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.day-card{background:#fff;border:0.5px solid rgba(0,0,0,0.13);border-radius:12px;margin-bottom:0.75rem;overflow:hidden}
+.day-header{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid rgba(0,0,0,0.1)}
+.day-label{font-weight:600;font-size:14px}
+.day-sub{font-size:11px;color:#A32D2D;margin-top:2px}
+.col-headers{display:grid;grid-template-columns:1fr 1fr 1fr;background:#f8f8f6;border-bottom:0.5px solid rgba(0,0,0,0.07)}
+.col-hdr{text-align:center;padding:5px 4px;font-size:11px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:0.04em}
+.meal-row{display:grid;grid-template-columns:1fr 1fr 1fr}
+.meal-cell{padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;border-right:0.5px solid rgba(0,0,0,0.07)}
+.meal-cell:last-child{border-right:none}
+.state-btn{width:100%;padding:7px 4px;border-radius:8px;border:1px solid transparent;cursor:pointer;font-size:12px;font-weight:600;text-align:center;transition:opacity 0.1s;line-height:1.3;-webkit-tap-highlight-color:transparent}
+.state-btn:active{opacity:0.7}
+.state-btn.off{background:#f0f0ee;border-color:rgba(0,0,0,0.13);color:#999}
+.state-btn.on{background:#E1F5EE;border-color:#1D9E75;color:#0F6E56}
+.state-btn.early{background:#EAF3DE;border-color:#639922;color:#3B6D11}
+.state-btn.late{background:#FAEEDA;border-color:#BA7517;color:#854F0B}
+.state-btn.locked-st{opacity:0.55;cursor:default;pointer-events:none}
+.time-wrap{width:100%}
+.time-input{width:100%;padding:4px 5px;border-radius:6px;border:0.5px solid rgba(0,0,0,0.18);font-size:12px;background:#fff;color:#1a1a1a;text-align:center;font-family:inherit}
+.note-row{border-top:0.5px solid rgba(0,0,0,0.07);padding:8px 12px;display:flex;align-items:center;gap:8px}
+.note-row input{flex:1;border:none;background:transparent;font-size:13px;color:#1a1a1a;outline:none;font-family:inherit}
+.note-row input::placeholder{color:#bbb}
+.note-row input:disabled{opacity:0.45}
+.count-pills{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.cpill{font-size:11px;padding:2px 7px;border-radius:10px;background:#f0f0ee;color:#999}
+.cpill.on{background:#E1F5EE;color:#0F6E56}
+.cpill.early{background:#EAF3DE;color:#3B6D11}
+.cpill.late{background:#FAEEDA;color:#854F0B}
+/* Setup */
+.setup-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:1.25rem;text-align:center;padding:1rem}
+.setup-screen h2{font-size:20px;font-weight:600}
+.setup-screen p{font-size:14px;color:#666;max-width:300px;line-height:1.6}
+.name-wrap{display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px}
+.name-wrap input{padding:12px 14px;border-radius:10px;border:1px solid rgba(0,0,0,0.2);font-size:16px;background:#fff;color:#1a1a1a;outline:none}
+.name-wrap input:focus{border-color:#0F6E56}
+.name-wrap button{padding:12px;border-radius:10px;background:#0F6E56;color:#fff;border:none;font-size:15px;cursor:pointer;font-weight:600}
+.name-wrap button:active{background:#0a5a45}
+/* Admin */
+.admin-card{background:#fff;border:0.5px solid rgba(0,0,0,0.13);border-radius:12px;margin-bottom:0.75rem;overflow:hidden}
+.admin-hdr{padding:10px 14px;border-bottom:0.5px solid rgba(0,0,0,0.1);font-weight:600;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.admin-counts{display:grid;grid-template-columns:1fr 1fr 1fr}
+.ac{padding:12px 8px;text-align:center;border-right:0.5px solid rgba(0,0,0,0.07)}
+.ac:last-child{border-right:none}
+.ac-label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px}
+.ac-num{font-size:26px;font-weight:700;color:#0F6E56}
+.ac-num.zero{color:#bbb;font-size:22px}
+.ac-names{padding:4px 12px 10px;display:flex;flex-wrap:wrap;gap:4px}
+.ntag{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.ntag.on{background:#E1F5EE;color:#0F6E56}
+.ntag.early{background:#EAF3DE;color:#3B6D11}
+.ntag.late{background:#FAEEDA;color:#854F0B}
+.day-note-admin{font-size:12px;color:#854F0B;background:#FAEEDA;padding:6px 14px;border-top:0.5px solid rgba(0,0,0,0.05);display:flex;gap:6px;align-items:center}
+/* Guests */
+.section-title{font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.06em;margin:1rem 0 0.5rem 2px}
+.guests-mgr{background:#fff;border:0.5px solid rgba(0,0,0,0.13);border-radius:12px;padding:1rem;margin-bottom:0.75rem}
+.guests-mgr h4{font-size:14px;font-weight:600;margin-bottom:0.75rem;display:flex;align-items:center;gap:6px}
+.guest-row-item{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.guest-row-item input{flex:1;padding:8px 10px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.18);font-size:13px;background:#fff;color:#1a1a1a;outline:none;font-family:inherit}
+.guest-row-item input:focus{border-color:#0F6E56}
+.del-btn{width:30px;height:30px;border-radius:50%;border:0.5px solid rgba(0,0,0,0.1);background:#FCEBEB;color:#A32D2D;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.add-btn{font-size:13px;color:#0F6E56;background:none;border:none;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:5px;font-weight:500}
+.guest-name-label{border-top:0.5px solid rgba(0,0,0,0.07);padding:6px 12px 2px;font-size:12px;color:#888;font-weight:500}
+</style>
+</head>
+<body>
+<div class="app"><div id="mc"></div></div>
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbyL04xgWxYT-ri0t2_5PUmYWMvLnBt1JWsm73-nRhPh7RXxY5JkIZ_QRPt5LMdodkOMsA/exec';
+const SECRET  = 'residencia2025';
+
+const MEALS_USER  = ['desayuno','almuerzo','cena'];
+const MEALS_ADMIN = ['almuerzo','cena','desayuno'];
+const MEAL_ICON   = {almuerzo:'🍽',cena:'🌙',desayuno:'☀️'};
+const DEFAULT_TIMES = {
+  almuerzo: {on:'13:30', early:'13:00', late:'14:45'},
+  cena:     {on:'20:30', early:'20:00', late:'21:30'},
+  desayuno: {on:'07:30', early:'07:00', late:'09:00'}
+};
+const STATES      = ['off','on','early','late'];
+const STATE_LABEL = {off:'—', on:'Normal', early:'Temprano', late:'Tarde'};
+const DAYS_ES     = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MONTHS_ES   = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+let currentTab = 'mi-vista';
+let remoteData  = {};
+let syncStatus  = 'idle';
+let lastSync    = null;
+let saveTimers  = {};
+
+/* ── local storage ── */
+function gl(){ try{ return JSON.parse(localStorage.getItem('res_v4')||'null'); }catch(e){ return null; } }
+function sl(s){ localStorage.setItem('res_v4', JSON.stringify(s)); }
+function initS(name){ const s={userName:name,bookings:{},dayNotes:{},guests:[],guestBookings:{}}; sl(s); return s; }
+
+/* ── helpers ── */
+function get7Days(){ const d=new Date(),r=[]; for(let i=0;i<7;i++){ const x=new Date(d); x.setDate(d.getDate()+i); r.push(x); } return r; }
+function dayKey(d){ return d.toISOString().slice(0,10); }
+function isLocked(date){
+  const now=new Date();
+  const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const tgt=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+  if(tgt<today) return true;
+  if(tgt.getTime()===today.getTime()&&(now.getHours()>8||(now.getHours()===8&&now.getMinutes()>=15))) return true;
+  return false;
+}
+function fmtDate(d){ return DAYS_ES[d.getDay()]+' '+d.getDate()+' de '+MONTHS_ES[d.getMonth()]; }
+function initials(n){ return n.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+function nextState(cur){ return STATES[(STATES.indexOf(cur)+1)%STATES.length]; }
+
+/* ── API ── */
+async function apiCall(params){
+  try{
+    const url=API_URL+'?secret='+SECRET+'&'+new URLSearchParams(params).toString();
+    const res=await fetch(url);
+    return await res.json();
+  }catch(e){ return {ok:false,error:e.toString()}; }
+}
+
+async function loadRemote(){
+  syncStatus='loading'; renderSyncBar();
+  const res=await apiCall({action:'load'});
+  if(res.ok){ remoteData=res.data||{}; lastSync=new Date(); syncStatus='ok'; }
+  else { syncStatus='error'; }
+  renderSyncBar();
+  render();
+}
+
+async function saveRow(usuario,fecha,comida,estado,hora,nota){
+  await apiCall({action:'save',usuario,fecha,comida,estado,hora,nota});
+}
+
+function schedSave(usuario,fecha,comida,estado,hora,nota){
+  const key=usuario+'_'+fecha+'_'+comida;
+  clearTimeout(saveTimers[key]);
+  saveTimers[key]=setTimeout(()=>saveRow(usuario,fecha,comida,estado,hora,nota),900);
+}
+
+/* ── sync bar ── */
+function renderSyncBar(){
+  const el=document.getElementById('sync-bar');
+  if(!el) return;
+  let icon,msg;
+  if(syncStatus==='loading'){
+    icon='<span class="sync-spin">↻</span>'; msg='Sincronizando…';
+  } else if(syncStatus==='ok'){
+    icon='<span class="sync-ok"><i class="ti ti-circle-check"></i></span>';
+    msg='Datos actualizados · '+(lastSync?lastSync.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}):'');
+  } else {
+    icon='<span class="sync-err"><i class="ti ti-alert-circle"></i></span>';
+    msg='Sin conexión — datos locales';
+  }
+  el.innerHTML=`<span style="display:flex;align-items:center;gap:5px">${icon} ${msg}</span>
+    <button class="sync-btn" onclick="loadRemote()"><i class="ti ti-refresh"></i> Actualizar</button>`;
+}
+
+/* ── main render ── */
+function render(){
+  const s=gl();
+  if(!s){ renderSetup(); return; }
+  renderApp(s);
+}
+
+function renderSetup(){
+  document.getElementById('mc').innerHTML=`
+    <div class="setup-screen">
+      <div style="font-size:48px">🍽</div>
+      <h2>Bienvenido a la residencia</h2>
+      <p>¿Cómo te llamas? Se guardará en este dispositivo para futuros accesos.</p>
+      <div class="name-wrap">
+        <input id="sname" type="text" placeholder="Tu nombre o iniciales" maxlength="30" autocomplete="off"/>
+        <button onclick="doSetup()">Entrar</button>
+      </div>
+    </div>`;
+  setTimeout(()=>{ const e=document.getElementById('sname'); if(e) e.focus(); },100);
+}
+
+function doSetup(){
+  const n=(document.getElementById('sname')||{}).value||'';
+  if(!n.trim()) return;
+  initS(n.trim()); loadRemote();
+}
+
+function renderApp(s){
+  const now=new Date();
+  const todayLocked=(now.getHours()>8||(now.getHours()===8&&now.getMinutes()>=15));
+  const minsLeft=(8*60+15)-(now.getHours()*60+now.getMinutes());
+  let html=`
+    <div class="topbar">
+      <div class="logo">🍽 Residencia</div>
+      <div class="user-pill" onclick="changeUser()">
+        <div class="avatar">${initials(s.userName)}</div>
+        <span>${s.userName}</span>
+        <i class="ti ti-chevron-down" style="font-size:12px;color:#999"></i>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab ${currentTab==='mi-vista'?'active':''}" onclick="switchTab('mi-vista')"><i class="ti ti-calendar"></i> Mi vista</div>
+      <div class="tab ${currentTab==='admin'?'active':''}" onclick="switchTab('admin')"><i class="ti ti-eye"></i> Administración</div>
+      <div class="tab ${currentTab==='invitados'?'active':''}" onclick="switchTab('invitados')"><i class="ti ti-user-plus"></i> Invitados</div>
+    </div>
+    <div class="deadline-bar ${todayLocked?'locked':'open'}">
+      <i class="ti ti-${todayLocked?'lock':'clock'}"></i>
+      ${todayLocked
+        ? 'Deadline pasado — edición cerrada para hoy (8:15 am)'
+        : `Deadline hoy a las 8:15 am — faltan <strong>${minsLeft} min</strong>`}
+    </div>
+    <div class="sync-bar" id="sync-bar"><span>Cargando…</span></div>`;
+
+  if(currentTab==='mi-vista')   html+=renderMiVista(s);
+  else if(currentTab==='admin') html+=renderAdmin(s);
+  else                          html+=renderInvitados(s);
+
+  document.getElementById('mc').innerHTML=html;
+  renderSyncBar();
+}
+
+/* ── Mi Vista ── */
+function renderMiVista(s){
+  const days=get7Days();
+  let html='';
+  days.forEach((day,idx)=>{
+    const dk=dayKey(day);
+    const locked=isLocked(day);
+    const b=s.bookings[dk]||{};
+    const note=(s.dayNotes&&s.dayNotes[dk])||'';
+    let pills='';
+    MEALS_USER.forEach(m=>{
+      const st=(b[m]&&b[m].state)||'off';
+      pills+=`<span class="cpill ${st}">${MEAL_ICON[m]}${st!=='off'?' '+STATE_LABEL[st]:''}</span>`;
+    });
+    html+=`<div class="day-card">
+      <div class="day-header">
+        <div>
+          <div class="day-label">${idx===0?'<span style="color:#0F6E56">Hoy</span> — ':''}${fmtDate(day)}</div>
+          ${locked?`<div class="day-sub"><i class="ti ti-lock"></i> ${idx===0?'Cerrado (pasó el deadline)':'Día pasado'}</div>`:''}
+        </div>
+        <div class="count-pills">${pills}</div>
+      </div>
+      <div class="col-headers">
+        <div class="col-hdr">${MEAL_ICON.desayuno} Desayuno</div>
+        <div class="col-hdr">${MEAL_ICON.almuerzo} Almuerzo</div>
+        <div class="col-hdr">${MEAL_ICON.cena} Cena</div>
+      </div>
+      <div class="meal-row">`;
+    MEALS_USER.forEach(m=>{
+      const info=b[m]||{state:'off'};
+      const st=info.state||'off';
+      const t=info.time||DEFAULT_TIMES[m][st==='off'?'on':st];
+      html+=`<div class="meal-cell">
+        <button class="state-btn ${st}${locked?' locked-st':''}"
+          ${!locked?`onclick="cycleState('${dk}','${m}')"`:''}>${st==='off'?'<i class="ti ti-x" style="opacity:0.3"></i>':STATE_LABEL[st]}</button>
+        ${st!=='off'&&!locked?`<div class="time-wrap"><input class="time-input" type="time" value="${t}" onchange="setTime('${dk}','${m}',this.value)"/></div>`:''}
+        ${st!=='off'&&locked?`<div style="font-size:11px;color:#999;margin-top:2px">${t}</div>`:''}
+      </div>`;
+    });
+    html+=`</div>
+      <div class="note-row">
+        <i class="ti ti-pencil" style="font-size:14px;color:#ccc;flex-shrink:0"></i>
+        <input type="text" placeholder="Nota del día (dieta blanda, sin ají…)"
+          value="${note.replace(/"/g,'&quot;')}"
+          ${locked?'disabled':''}
+          onchange="setDayNote('${dk}',this.value)"/>
+      </div>
+    </div>`;
+  });
+  return html;
+}
+
+/* ── Admin ── */
+function getAllForDay(s,dk){
+  const result=[];
+  const myEntry={name:s.userName,isGuest:false};
+  const b=s.bookings[dk]||{};
+  MEALS_ADMIN.forEach(m=>{ myEntry[m]=b[m]||{state:'off'}; });
+  result.push(myEntry);
+  Object.keys(remoteData).forEach(usuario=>{
+    if(usuario===s.userName) return;
+    const dayData=(remoteData[usuario]&&remoteData[usuario][dk])||{};
+    const entry={name:usuario,isGuest:false};
+    MEALS_ADMIN.forEach(m=>{ entry[m]=dayData[m]||{state:'off'}; });
+    result.push(entry);
+  });
+  (s.guests||[]).forEach(g=>{
+    const gb=(s.guestBookings[dk]||{})[g.id]||{};
+    const ge={name:g.name,isGuest:true,id:g.id};
+    MEALS_ADMIN.forEach(m=>{ ge[m]=gb[m]||{state:'off'}; });
+    result.push(ge);
+  });
+  return result;
+}
+
+function renderAdmin(s){
+  const days=get7Days();
+  let html=`<div class="section-title">Resumen para la administración</div>`;
+  days.forEach((day,idx)=>{
+    const dk=dayKey(day);
+    const entries=getAllForDay(s,dk);
+    const counts={almuerzo:0,cena:0,desayuno:0};
+    const names={almuerzo:[],cena:[],desayuno:[]};
+    entries.forEach(e=>{
+      MEALS_ADMIN.forEach(m=>{
+        const st=(e[m]&&e[m].state)||'off';
+        if(st!=='off'){
+          counts[m]++;
+          names[m].push({name:e.name,st,time:e[m].time||DEFAULT_TIMES[m][st]});
+        }
+      });
+    });
+    const total=counts.almuerzo+counts.cena+counts.desayuno;
+    const note=(s.dayNotes&&s.dayNotes[dk])||'';
+    html+=`<div class="admin-card">
+      <div class="admin-hdr">
+        <span>${idx===0?'<span style="color:#0F6E56">Hoy</span> — ':''}${fmtDate(day)}</span>
+        <span style="font-size:12px;color:#999">${total} asistencia${total!==1?'s':''}</span>
+      </div>
+      <div class="admin-counts">`;
+    MEALS_ADMIN.forEach(m=>{
+      html+=`<div class="ac">
+        <div class="ac-label">${MEAL_ICON[m]} ${m}</div>
+        <div class="ac-num ${counts[m]===0?'zero':''}">${counts[m]}</div>
+      </div>`;
+    });
+    html+=`</div>`;
+    MEALS_ADMIN.forEach(m=>{
+      if(names[m].length){
+        html+=`<div class="ac-names">`;
+        names[m].forEach(n=>{
+          const extra=n.st!=='on'?` · ${STATE_LABEL[n.st]} ${n.time}`:'';
+          html+=`<span class="ntag ${n.st}">${n.name}${extra}</span>`;
+        });
+        html+=`</div>`;
+      }
+    });
+    if(note) html+=`<div class="day-note-admin"><i class="ti ti-pencil"></i> ${note}</div>`;
+    html+=`</div>`;
+  });
+  return html;
+}
+
+/* ── Invitados ── */
+function renderInvitados(s){
+  const days=get7Days();
+  let html=`<div class="guests-mgr">
+    <h4><i class="ti ti-user-plus"></i> Gestionar invitados</h4>`;
+  (s.guests||[]).forEach(g=>{
+    html+=`<div class="guest-row-item">
+      <input type="text" value="${g.name.replace(/"/g,'&quot;')}" onchange="renameGuest('${g.id}',this.value)" placeholder="Nombre del invitado"/>
+      <button class="del-btn" onclick="deleteGuest('${g.id}')"><i class="ti ti-x" style="font-size:14px"></i></button>
+    </div>`;
+  });
+  html+=`<button class="add-btn" onclick="addGuest()"><i class="ti ti-plus"></i> Añadir invitado</button></div>`;
+
+  if((s.guests||[]).length>0){
+    html+=`<div class="section-title">Comidas de invitados por día</div>`;
+    days.forEach((day,idx)=>{
+      const dk=dayKey(day);
+      const locked=isLocked(day);
+      html+=`<div class="day-card">
+        <div class="day-header">
+          <div class="day-label">${idx===0?'<span style="color:#0F6E56">Hoy</span> — ':''}${fmtDate(day)}</div>
+          ${locked?'<span style="font-size:11px;color:#A32D2D"><i class="ti ti-lock"></i> Cerrado</span>':''}
+        </div>
+        <div class="col-headers">
+          <div class="col-hdr">${MEAL_ICON.desayuno} Desayuno</div>
+          <div class="col-hdr">${MEAL_ICON.almuerzo} Almuerzo</div>
+          <div class="col-hdr">${MEAL_ICON.cena} Cena</div>
+        </div>`;
+      s.guests.forEach(g=>{
+        const gb=(s.guestBookings[dk]||{})[g.id]||{};
+        html+=`<div class="guest-name-label">${g.name}</div><div class="meal-row">`;
+        MEALS_USER.forEach(m=>{
+          const info=gb[m]||{state:'off'};
+          const st=info.state||'off';
+          const t=info.time||DEFAULT_TIMES[m][st==='off'?'on':st];
+          html+=`<div class="meal-cell">
+            <button class="state-btn ${st}${locked?' locked-st':''}"
+              ${!locked?`onclick="cycleGuestMeal('${dk}','${g.id}','${m}')"`:''}>${st==='off'?'<i class="ti ti-x" style="opacity:0.3"></i>':STATE_LABEL[st]}</button>
+            ${st!=='off'&&!locked?`<div class="time-wrap"><input class="time-input" type="time" value="${t}" onchange="setGuestTime('${dk}','${g.id}','${m}',this.value)"/></div>`:''}
+            ${st!=='off'&&locked?`<div style="font-size:11px;color:#999;margin-top:2px">${t}</div>`:''}
+          </div>`;
+        });
+        html+=`</div>`;
+      });
+      html+=`</div>`;
+    });
+  }
+  return html;
+}
+
+/* ── actions ── */
+function cycleState(dk,meal){
+  const s=gl();
+  if(!s.bookings[dk]) s.bookings[dk]={};
+  const cur=(s.bookings[dk][meal]&&s.bookings[dk][meal].state)||'off';
+  const next=nextState(cur);
+  const t=DEFAULT_TIMES[meal][next==='off'?'on':next];
+  s.bookings[dk][meal]={state:next,time:t};
+  sl(s); render();
+  const nota=(s.dayNotes&&s.dayNotes[dk])||'';
+  schedSave(s.userName,dk,meal,next,t,nota);
+}
+
+function setTime(dk,meal,val){
+  const s=gl();
+  if(!s.bookings[dk]) s.bookings[dk]={};
+  if(!s.bookings[dk][meal]) s.bookings[dk][meal]={state:'on'};
+  s.bookings[dk][meal].time=val;
+  sl(s);
+  const nota=(s.dayNotes&&s.dayNotes[dk])||'';
+  schedSave(s.userName,dk,meal,s.bookings[dk][meal].state,val,nota);
+}
+
+function setDayNote(dk,val){
+  const s=gl();
+  if(!s.dayNotes) s.dayNotes={};
+  s.dayNotes[dk]=val; sl(s);
+  MEALS_USER.forEach(m=>{
+    const info=(s.bookings[dk]&&s.bookings[dk][m])||{state:'off',time:''};
+    schedSave(s.userName,dk,m,info.state,info.time||'',val);
+  });
+}
+
+function cycleGuestMeal(dk,gid,meal){
+  const s=gl();
+  if(!s.guestBookings[dk]) s.guestBookings[dk]={};
+  if(!s.guestBookings[dk][gid]) s.guestBookings[dk][gid]={};
+  const cur=(s.guestBookings[dk][gid][meal]&&s.guestBookings[dk][gid][meal].state)||'off';
+  const next=nextState(cur);
+  const t=DEFAULT_TIMES[meal][next==='off'?'on':next];
+  s.guestBookings[dk][gid][meal]={state:next,time:t};
+  sl(s); render();
+  const gName=(s.guests.find(g=>g.id===gid)||{}).name||gid;
+  schedSave(gName+' (inv.)',dk,meal,next,t,'');
+}
+
+function setGuestTime(dk,gid,meal,val){
+  const s=gl();
+  if(!s.guestBookings[dk]) s.guestBookings[dk]={};
+  if(!s.guestBookings[dk][gid]) s.guestBookings[dk][gid]={};
+  if(!s.guestBookings[dk][gid][meal]) s.guestBookings[dk][gid][meal]={state:'on'};
+  s.guestBookings[dk][gid][meal].time=val;
+  sl(s);
+  const gName=(s.guests.find(g=>g.id===gid)||{}).name||gid;
+  schedSave(gName+' (inv.)',dk,meal,s.guestBookings[dk][gid][meal].state,val,'');
+}
+
+function switchTab(t){ currentTab=t; render(); }
+
+function changeUser(){
+  const s=gl();
+  const n=prompt('Cambiar nombre:',s.userName);
+  if(n&&n.trim()){ s.userName=n.trim(); sl(s); loadRemote(); }
+}
+
+function addGuest(){
+  const s=gl(); if(!s.guests) s.guests=[];
+  s.guests.push({id:'g'+Date.now(),name:'Invitado'});
+  sl(s); render();
+}
+
+function renameGuest(gid,name){
+  const s=gl(); const g=(s.guests||[]).find(x=>x.id===gid);
+  if(g){ g.name=name; sl(s); }
+}
+
+function deleteGuest(gid){
+  const s=gl(); s.guests=(s.guests||[]).filter(g=>g.id!==gid);
+  sl(s); render();
+}
+
+/* ── init ── */
+const _s=gl();
+if(_s){ loadRemote(); } else { render(); }
+setInterval(()=>{ if(gl()) loadRemote(); }, 60000);
+</script>
+</body>
+</html>
