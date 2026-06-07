@@ -81,6 +81,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .ntag.early{background:#EAF3DE;color:#3B6D11}
 .ntag.late{background:#FAEEDA;color:#854F0B}
 .day-note-admin{font-size:12px;color:#854F0B;background:#FAEEDA;padding:6px 14px;border-top:0.5px solid rgba(0,0,0,0.05);display:flex;gap:6px;align-items:center}
+.admin-meal-line{padding:4px 14px 6px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;border-top:0.5px solid rgba(0,0,0,0.05)}
+.admin-meal-verb{font-size:12px;font-weight:600;color:#444;white-space:nowrap;flex-shrink:0}
+.admin-meal-tags{display:flex;flex-wrap:wrap;gap:4px}
 /* Guests */
 .section-title{font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.06em;margin:1rem 0 0.5rem 2px}
 .guests-mgr{background:#fff;border:0.5px solid rgba(0,0,0,0.13);border-radius:12px;padding:1rem;margin-bottom:0.75rem}
@@ -102,11 +105,34 @@ const SECRET  = 'residencia2025';
 const MEALS_USER  = ['desayuno','almuerzo','cena'];
 const MEALS_ADMIN = ['almuerzo','cena','desayuno'];
 const MEAL_ICON   = {almuerzo:'🍽',cena:'🌙',desayuno:'☀️'};
-const DEFAULT_TIMES = {
-  almuerzo: {on:'13:30', early:'13:00', late:'14:45'},
-  cena:     {on:'20:30', early:'20:00', late:'21:30'},
-  desayuno: {on:'07:30', early:'07:00', late:'09:00'}
+const DEFAULT_TIMES_BY_DOW = {
+  // 0=domingo,1=lunes,...,6=sábado
+  lv: { // lunes-viernes (1-5)
+    desayuno: {on:'07:30', early:'06:30', late:'09:00'},
+    almuerzo: {on:'13:30', early:'13:00', late:'15:00'},
+    cena:     {on:'20:30', early:'20:00', late:'21:45'}
+  },
+  sab: { // sábado (6)
+    desayuno: {on:'08:00', early:'07:00', late:'09:30'},
+    almuerzo: {on:'13:30', early:'13:00', late:'15:00'},
+    cena:     {on:'20:30', early:'20:00', late:'21:45'}
+  },
+  dom: { // domingo (0)
+    desayuno: {on:'09:00', early:'08:00', late:'09:45'},
+    almuerzo: {on:'13:30', early:'13:00', late:'15:00'},
+    cena:     {on:'20:00', early:'19:30', late:'21:45'}
+  }
 };
+function getDT(date){
+  const dow=date.getDay();
+  if(dow===0) return DEFAULT_TIMES_BY_DOW.dom;
+  if(dow===6) return DEFAULT_TIMES_BY_DOW.sab;
+  return DEFAULT_TIMES_BY_DOW.lv;
+}
+function getDefaultTime(date,meal,state){
+  const dt=getDT(date);
+  return dt[meal][state==='off'?'on':state]||'00:00';
+}
 const STATES      = ['off','on','early','late'];
 const STATE_LABEL = {off:'—', on:'Normal', early:'Temprano', late:'Tarde'};
 const DAYS_ES     = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
@@ -138,18 +164,44 @@ function fmtDate(d){ return DAYS_ES[d.getDay()]+' '+d.getDate()+' de '+MONTHS_ES
 function initials(n){ return n.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2); }
 function nextState(cur){ return STATES[(STATES.indexOf(cur)+1)%STATES.length]; }
 
-/* ── API ── */
-async function apiCall(params){
-  try{
-    const url=API_URL+'?secret='+SECRET+'&'+new URLSearchParams(params).toString();
-    const res=await fetch(url);
-    return await res.json();
-  }catch(e){ return {ok:false,error:e.toString()}; }
+/* ── API vía JSONP (evita CORS con Google Apps Script) ── */
+let _cbCounter = 0;
+
+function jsonp(params){
+  return new Promise((resolve)=>{
+    const cbName = '_cb' + (++_cbCounter);
+    const timeout = setTimeout(()=>{
+      delete window[cbName];
+      const tag = document.getElementById(cbName);
+      if(tag) tag.remove();
+      resolve({ok:false, error:'timeout'});
+    }, 10000);
+
+    window[cbName] = function(data){
+      clearTimeout(timeout);
+      delete window[cbName];
+      const tag = document.getElementById(cbName);
+      if(tag) tag.remove();
+      resolve(data);
+    };
+
+    const qs = new URLSearchParams({...params, secret:SECRET, callback:cbName}).toString();
+    const script = document.createElement('script');
+    script.id = cbName;
+    script.src = API_URL + '?' + qs;
+    script.onerror = ()=>{
+      clearTimeout(timeout);
+      delete window[cbName];
+      script.remove();
+      resolve({ok:false, error:'network error'});
+    };
+    document.head.appendChild(script);
+  });
 }
 
 async function loadRemote(){
   syncStatus='loading'; renderSyncBar();
-  const res=await apiCall({action:'load'});
+  const res = await jsonp({action:'load'});
   if(res.ok){ remoteData=res.data||{}; lastSync=new Date(); syncStatus='ok'; }
   else { syncStatus='error'; }
   renderSyncBar();
@@ -157,7 +209,7 @@ async function loadRemote(){
 }
 
 async function saveRow(usuario,fecha,comida,estado,hora,nota){
-  await apiCall({action:'save',usuario,fecha,comida,estado,hora,nota});
+  await jsonp({action:'save',usuario,fecha,comida,estado,hora,nota});
 }
 
 function schedSave(usuario,fecha,comida,estado,hora,nota){
@@ -276,7 +328,7 @@ function renderMiVista(s){
     MEALS_USER.forEach(m=>{
       const info=b[m]||{state:'off'};
       const st=info.state||'off';
-      const t=info.time||DEFAULT_TIMES[m][st==='off'?'on':st];
+      const t=info.time||getDefaultTime(day,m,st);
       html+=`<div class="meal-cell">
         <button class="state-btn ${st}${locked?' locked-st':''}"
           ${!locked?`onclick="cycleState('${dk}','${m}')"`:''}>${st==='off'?'<i class="ti ti-x" style="opacity:0.3"></i>':STATE_LABEL[st]}</button>
@@ -298,7 +350,7 @@ function renderMiVista(s){
 }
 
 /* ── Admin ── */
-function getAllForDay(s,dk){
+function getAllForDay(s,dk,dayObj){
   const result=[];
   const myEntry={name:s.userName,isGuest:false};
   const b=s.bookings[dk]||{};
@@ -325,7 +377,7 @@ function renderAdmin(s){
   let html=`<div class="section-title">Resumen para la administración</div>`;
   days.forEach((day,idx)=>{
     const dk=dayKey(day);
-    const entries=getAllForDay(s,dk);
+    const entries=getAllForDay(s,dk,day);
     const counts={almuerzo:0,cena:0,desayuno:0};
     const names={almuerzo:[],cena:[],desayuno:[]};
     entries.forEach(e=>{
@@ -333,12 +385,20 @@ function renderAdmin(s){
         const st=(e[m]&&e[m].state)||'off';
         if(st!=='off'){
           counts[m]++;
-          names[m].push({name:e.name,st,time:e[m].time||DEFAULT_TIMES[m][st]});
+          const t=e[m].time||getDefaultTime(day,m,st);
+          const ini=initials(e.name);
+          const extra=st!=='on'?` (${STATE_LABEL[st]} ${t})`:'';
+          names[m].push({label:ini+extra, st});
         }
       });
     });
     const total=counts.almuerzo+counts.cena+counts.desayuno;
     const note=(s.dayNotes&&s.dayNotes[dk])||'';
+
+    // día siguiente para el desayuno
+    const nextDay=new Date(day); nextDay.setDate(day.getDate()+1);
+    const nextDayLabel=DAYS_ES[nextDay.getDay()];
+
     html+=`<div class="admin-card">
       <div class="admin-hdr">
         <span>${idx===0?'<span style="color:#0F6E56">Hoy</span> — ':''}${fmtDate(day)}</span>
@@ -352,16 +412,19 @@ function renderAdmin(s){
       </div>`;
     });
     html+=`</div>`;
+
+    // resumen textual: Almuerzan / Cenan / Desayunan
+    const verbos = {almuerzo:'Almuerzan', cena:'Cenan', desayuno:`Desayunan (${nextDayLabel})`};
     MEALS_ADMIN.forEach(m=>{
       if(names[m].length){
-        html+=`<div class="ac-names">`;
-        names[m].forEach(n=>{
-          const extra=n.st!=='on'?` · ${STATE_LABEL[n.st]} ${n.time}`:'';
-          html+=`<span class="ntag ${n.st}">${n.name}${extra}</span>`;
-        });
-        html+=`</div>`;
+        const lista=names[m].map(n=>`<span class="ntag ${n.st}">${n.label}</span>`).join(' ');
+        html+=`<div class="admin-meal-line">
+          <span class="admin-meal-verb">${verbos[m]}:</span>
+          <span class="admin-meal-tags">${lista}</span>
+        </div>`;
       }
     });
+
     if(note) html+=`<div class="day-note-admin"><i class="ti ti-pencil"></i> ${note}</div>`;
     html+=`</div>`;
   });
@@ -402,7 +465,7 @@ function renderInvitados(s){
         MEALS_USER.forEach(m=>{
           const info=gb[m]||{state:'off'};
           const st=info.state||'off';
-          const t=info.time||DEFAULT_TIMES[m][st==='off'?'on':st];
+          const t=info.time||getDefaultTime(day,m,st);
           html+=`<div class="meal-cell">
             <button class="state-btn ${st}${locked?' locked-st':''}"
               ${!locked?`onclick="cycleGuestMeal('${dk}','${g.id}','${m}')"`:''}>${st==='off'?'<i class="ti ti-x" style="opacity:0.3"></i>':STATE_LABEL[st]}</button>
@@ -424,7 +487,8 @@ function cycleState(dk,meal){
   if(!s.bookings[dk]) s.bookings[dk]={};
   const cur=(s.bookings[dk][meal]&&s.bookings[dk][meal].state)||'off';
   const next=nextState(cur);
-  const t=DEFAULT_TIMES[meal][next==='off'?'on':next];
+  const dayObj=new Date(dk+'T12:00:00');
+  const t=getDefaultTime(dayObj,meal,next);
   s.bookings[dk][meal]={state:next,time:t};
   sl(s); render();
   const nota=(s.dayNotes&&s.dayNotes[dk])||'';
@@ -457,7 +521,7 @@ function cycleGuestMeal(dk,gid,meal){
   if(!s.guestBookings[dk][gid]) s.guestBookings[dk][gid]={};
   const cur=(s.guestBookings[dk][gid][meal]&&s.guestBookings[dk][gid][meal].state)||'off';
   const next=nextState(cur);
-  const t=DEFAULT_TIMES[meal][next==='off'?'on':next];
+  const t=getDefaultTime(new Date(dk+'T12:00:00'),meal,next);
   s.guestBookings[dk][gid][meal]={state:next,time:t};
   sl(s); render();
   const gName=(s.guests.find(g=>g.id===gid)||{}).name||gid;
