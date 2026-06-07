@@ -350,8 +350,8 @@ function renderApp(s){
     <div class="deadline-bar ${todayLocked?'locked':'open'}">
       <i class="ti ti-${todayLocked?'lock':'clock'}"></i>
       ${todayLocked
-        ? \`Deadline pasado — edición cerrada para hoy (\${dl.h}:\${String(dl.m).padStart(2,'0')} am)\`
-        : \`Deadline hoy a las \${dl.h}:\${String(dl.m).padStart(2,'0')} am — faltan <strong>\${minsLeft} min</strong>\`}
+        ? ('Deadline pasado — edición cerrada para hoy ('+dl.h+':'+String(dl.m).padStart(2,'0')+' am)')
+        : ('Deadline hoy a las '+dl.h+':'+String(dl.m).padStart(2,'0')+' am — faltan <strong>'+minsLeft+' min</strong>')}
     </div>
     <div class="sync-bar" id="sync-bar"><span>Cargando…</span></div>`;
 
