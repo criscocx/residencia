@@ -352,13 +352,13 @@ function renderMiVista(s){
 /* ── Admin ── */
 function getAllForDay(s,dk,dayObj){
   const result=[];
-  const myEntry={name:s.userName,isGuest:false};
-  const b=s.bookings[dk]||{};
-  MEALS_ADMIN.forEach(m=>{ myEntry[m]=b[m]||{state:'off'}; });
-  result.push(myEntry);
-  Object.keys(remoteData).forEach(usuario=>{
-    if(usuario===s.userName) return;
-    const dayData=(remoteData[usuario]&&remoteData[usuario][dk])||{};
+  // Todos los usuarios: remotos + el propio (datos locales tienen prioridad por ser más frescos)
+  const allUsers=new Set(Object.keys(remoteData));
+  allUsers.add(s.userName);
+  allUsers.forEach(usuario=>{
+    const dayData = usuario===s.userName
+      ? (s.bookings[dk]||{})
+      : ((remoteData[usuario]&&remoteData[usuario][dk])||{});
     const entry={name:usuario,isGuest:false};
     MEALS_ADMIN.forEach(m=>{ entry[m]=dayData[m]||{state:'off'}; });
     result.push(entry);
@@ -386,9 +386,8 @@ function renderAdmin(s){
         if(st!=='off'){
           counts[m]++;
           const t=e[m].time||getDefaultTime(day,m,st);
-          const ini=initials(e.name);
           const extra=st!=='on'?` (${STATE_LABEL[st]} ${t})`:'';
-          names[m].push({label:ini+extra, st});
+          names[m].push({label:e.name+extra, st});
         }
       });
     });
