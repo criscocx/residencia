@@ -46,6 +46,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .state-btn.early{background:#EAF3DE;border-color:#639922;color:#3B6D11}
 .state-btn.late{background:#FAEEDA;border-color:#BA7517;color:#854F0B}
 .state-btn.locked-st{opacity:0.55;cursor:default;pointer-events:none}
+.state-btn.from-tpl{border-style:dashed}
+.tpl-day-card{background:var(--color-background-primary);border:0.5px solid rgba(0,0,0,0.13);border-radius:12px;margin-bottom:0.75rem;overflow:hidden}
+.tpl-day-header{padding:10px 14px;font-weight:600;font-size:14px;border-bottom:0.5px solid rgba(0,0,0,0.1)}
+.tpl-intro{font-size:13px;color:#666;line-height:1.6;margin-bottom:1rem;padding:0 2px}
 .time-wrap{width:100%}
 .time-input{width:100%;padding:4px 5px;border-radius:6px;border:0.5px solid rgba(0,0,0,0.18);font-size:12px;background:#fff;color:#1a1a1a;text-align:center;font-family:inherit}
 .note-row{border-top:0.5px solid rgba(0,0,0,0.07);padding:8px 12px;display:flex;align-items:center;gap:8px}
@@ -179,9 +183,15 @@ let lastSync    = null;
 let saveTimers  = {};
 
 /* ── local storage ── */
-function gl(){ try{ return JSON.parse(localStorage.getItem('res_v4')||'null'); }catch(e){ return null; } }
+function gl(){
+  try{
+    const s = JSON.parse(localStorage.getItem('res_v4')||'null');
+    if(s && !s.weekTemplate) s.weekTemplate={}; // migración para usuarios existentes
+    return s;
+  }catch(e){ return null; }
+}
 function sl(s){ localStorage.setItem('res_v4', JSON.stringify(s)); }
-function initS(name){ const s={userName:name,bookings:{},dayNotes:{},guests:[],guestBookings:{}}; sl(s); return s; }
+function initS(name){ const s={userName:name,bookings:{},dayNotes:{},guests:[],guestBookings:{},weekTemplate:{}}; sl(s); return s; }
 
 /* ── helpers ── */
 function get7Days(){ const d=new Date(),r=[]; for(let i=0;i<7;i++){ const x=new Date(d); x.setDate(d.getDate()+i); r.push(x); } return r; }
@@ -290,7 +300,48 @@ async function loadRemote(){
   if(res.ok){ remoteData=normalizeRemoteData(res.data||{}); lastSync=new Date(); syncStatus='ok'; }
   else { syncStatus='error'; }
   renderSyncBar();
+  autoSyncTemplate();
   render();
+}
+
+// Recorre los próximos 7 días; para cualquier comida sin selección manual
+// (ni local ni remota) que tenga valor en la semana tipo, la sincroniza al Sheet.
+// Así el residente nunca necesita "confirmar" su rutina habitual.
+function autoSyncTemplate(){
+  const s=gl();
+  if(!s||!s.weekTemplate||!Object.keys(s.weekTemplate).length) return;
+  const days=get7Days();
+  let changed=false;
+
+  days.forEach(day=>{
+    const dk=dayKey(day);
+    const nextDay=new Date(day); nextDay.setDate(day.getDate()+1);
+    const dkNext=dayKey(nextDay);
+
+    MEALS_USER.forEach(m=>{
+      const storeDk = m==='desayuno' ? dkNext : dk;
+      const dowDate = m==='desayuno' ? nextDay : day;
+      if(isMealLocked(day,m)) return; // no tocar comidas ya cerradas
+
+      const hasLocalManual = s.bookings[storeDk] && s.bookings[storeDk][m] && s.bookings[storeDk][m].state!==undefined;
+      if(hasLocalManual) return; // el usuario ya decidió algo concreto este día
+
+      const hasRemote = remoteData[s.userName] && remoteData[s.userName][storeDk] && remoteData[s.userName][storeDk][m];
+      if(hasRemote) return; // ya está en el Sheet (quizá puesto desde otro dispositivo)
+
+      const tplVal=getTplState(s, dowDate, m);
+      if(!tplVal || tplVal.state==='off') return; // sin plantilla o plantilla dice "no come": no hay nada que mandar
+
+      // Aplicar y sincronizar
+      if(!s.bookings[storeDk]) s.bookings[storeDk]={};
+      s.bookings[storeDk][m]={state:tplVal.state, time:tplVal.time};
+      const nota=(s.dayNotes&&s.dayNotes[storeDk])||'';
+      schedSave(s.userName, storeDk, m, tplVal.state, tplVal.time, nota);
+      changed=true;
+    });
+  });
+
+  if(changed) sl(s);
 }
 
 async function saveRow(usuario,fecha,comida,estado,hora,nota){
@@ -364,6 +415,7 @@ function renderApp(s){
     </div>
     <div class="tab-bar">
       <div class="tab ${currentTab==='mi-vista'?'active':''}" onclick="switchTab('mi-vista')"><i class="ti ti-calendar"></i> Mi vista</div>
+      <div class="tab ${currentTab==='semana-tipo'?'active':''}" onclick="switchTab('semana-tipo')"><i class="ti ti-repeat"></i> Mi semana tipo</div>
       <div class="tab ${currentTab==='admin'?'active':''}" onclick="switchTab('admin')"><i class="ti ti-eye"></i> Administración</div>
       <div class="tab ${currentTab==='invitados'?'active':''}" onclick="switchTab('invitados')"><i class="ti ti-user-plus"></i> Invitados</div>
     </div>
@@ -375,15 +427,24 @@ function renderApp(s){
     </div>
     <div class="sync-bar" id="sync-bar"><span>Cargando…</span></div>`;
 
-  if(currentTab==='mi-vista')   html+=renderMiVista(s);
-  else if(currentTab==='admin') html+=renderAdmin(s);
-  else                          html+=renderInvitados(s);
+  if(currentTab==='mi-vista')        html+=renderMiVista(s);
+  else if(currentTab==='semana-tipo') html+=renderSemanaTipo(s);
+  else if(currentTab==='admin')       html+=renderAdmin(s);
+  else                                html+=renderInvitados(s);
 
   document.getElementById('mc').innerHTML=html;
   renderSyncBar();
 }
 
 /* ── Mi Vista ── */
+function getTplState(s, dowDate, meal){
+  // dowDate: objeto Date del día cuyo día de semana se consulta
+  const dow=dowDate.getDay(); // 0=domingo..6=sábado
+  const tpl=(s.weekTemplate&&s.weekTemplate[dow])||null;
+  if(!tpl||!tpl[meal]) return null;
+  return tpl[meal]; // {state, time}
+}
+
 function renderMiVista(s){
   const days=get7Days();
   let html='';
@@ -403,7 +464,12 @@ function renderMiVista(s){
     let pills='';
     MEALS_USER.forEach(m=>{
       const bk = m==='desayuno' ? bNext : b;
-      const st=(bk[m]&&bk[m].state)||'off';
+      let st=(bk[m]&&bk[m].state);
+      if(st===undefined){
+        const dowDate = m==='desayuno' ? nextDay : day;
+        const tplVal = getTplState(s, dowDate, m);
+        st = tplVal ? tplVal.state : 'off';
+      }
       pills+=`<span class="cpill ${st}">${MEAL_ICON[m]}${st!=='off'?' '+STATE_LABEL[st]:''}</span>`;
     });
     html+=`<div class="day-card">
@@ -424,14 +490,23 @@ function renderMiVista(s){
       // El desayuno usa dkNext como clave (día en que se come = mañana)
       const storeDk = m==='desayuno' ? dkNext : dk;
       const bk = m==='desayuno' ? bNext : b;
-      const info=bk[m]||{state:'off'};
-      const st=info.state||'off';
+      const info=bk[m];
       const dayForTime = m==='desayuno' ? nextDay : day;
-      const t=info.time||getDefaultTime(dayForTime,m,st);
+      let st, t, fromTpl=false;
+      if(info && info.state!==undefined){
+        // Ya hay selección manual guardada para este día específico
+        st=info.state; t=info.time||getDefaultTime(dayForTime,m,st);
+      } else {
+        // Sin selección manual: usar plantilla semanal si existe
+        const tplVal=getTplState(s, dayForTime, m);
+        if(tplVal){ st=tplVal.state; t=tplVal.time||getDefaultTime(dayForTime,m,st); fromTpl=true; }
+        else { st='off'; t=getDefaultTime(dayForTime,m,st); }
+      }
       const mLocked=isMealLocked(day,m);
       html+=`<div class="meal-cell">
-        <button class="state-btn ${st}${mLocked?' locked-st':''}"
-          ${!mLocked?`onclick="cycleState('${storeDk}','${m}')"`:''}>${st==='off'?'<i class="ti ti-x" style="opacity:0.3"></i>':STATE_LABEL[st]}</button>
+        ${fromTpl&&st!=='off'?'<div style="font-size:9px;color:var(--color-text-tertiary,#aaa);display:flex;align-items:center;gap:2px;margin-bottom:1px"><i class="ti ti-point-filled" style="font-size:6px" aria-hidden="true"></i>semana tipo</div>':''}
+        <button class="state-btn ${st}${fromTpl?' from-tpl':''}${mLocked?' locked-st':''}"
+          ${!mLocked?`onclick="cycleState('${storeDk}','${m}',${fromTpl})"`:''}>${st==='off'?'<i class="ti ti-x" style="opacity:0.3"></i>':STATE_LABEL[st]}</button>
         ${st!=='off'&&!mLocked?`<div class="time-wrap"><input class="time-input" type="time" value="${t}" onchange="setTime('${storeDk}','${m}',this.value)"/></div>`:''}
         ${st!=='off'&&mLocked?`<div style="font-size:11px;color:#999;margin-top:2px">${t}</div>`:''}
       </div>`;
@@ -478,6 +553,79 @@ function getAllForDay(s,dk,dayObj){
     result.push(ge);
   });
   return result;
+}
+
+/* ── Mi semana tipo ── */
+const DOW_ORDER = [1,2,3,4,5,6,0]; // lunes..domingo
+const DOW_LABEL = {0:'domingo',1:'lunes',2:'martes',3:'miércoles',4:'jueves',5:'viernes',6:'sábado'};
+
+function renderSemanaTipo(s){
+  let html=`<p class="tpl-intro">Configura aquí tu patrón habitual de comidas. Estos valores se usarán como punto de partida cada semana en "Mi vista" — los verás con borde punteado hasta que los confirmes o cambies para un día concreto.</p>`;
+
+  DOW_ORDER.forEach(dow=>{
+    const tpl=(s.weekTemplate&&s.weekTemplate[dow])||{};
+    html+=`<div class="tpl-day-card">
+      <div class="tpl-day-header">${DOW_LABEL[dow].charAt(0).toUpperCase()+DOW_LABEL[dow].slice(1)}</div>
+      <div class="col-headers">
+        <div class="col-hdr">${MEAL_ICON.almuerzo} Almuerzo</div>
+        <div class="col-hdr">${MEAL_ICON.cena} Cena</div>
+        <div class="col-hdr">${MEAL_ICON.desayuno} Desayuno <span style="font-size:9px;color:#bbb;display:block;font-weight:400">(día siguiente)</span></div>
+      </div>
+      <div class="meal-row">`;
+    MEALS_USER.forEach(m=>{
+      const info=tpl[m]||{state:'off'};
+      const st=info.state||'off';
+      // El desayuno de esta tarjeta se come al día SIGUIENTE, así que su hora
+      // por defecto debe calcularse con ese día siguiente (p.ej. viernes -> sábado)
+      const refDay=nextOccurrence(dow);
+      const dayForTime = m==='desayuno' ? (()=>{ const n=new Date(refDay); n.setDate(n.getDate()+1); return n; })() : refDay;
+      const t=info.time||getDefaultTime(dayForTime,m,st);
+      html+=`<div class="meal-cell">
+        <button class="state-btn ${st}" onclick="cycleTplState(${dow},'${m}')">${st==='off'?'<i class="ti ti-x" style="opacity:0.3"></i>':STATE_LABEL[st]}</button>
+        ${st!=='off'?`<div class="time-wrap"><input class="time-input" type="time" value="${t}" onchange="setTplTime(${dow},'${m}',this.value)"/></div>`:''}
+      </div>`;
+    });
+    html+=`</div></div>`;
+  });
+
+  html+=`<button class="add-btn" style="margin-top:0.25rem" onclick="clearTpl()"><i class="ti ti-trash"></i> Borrar toda mi semana tipo</button>`;
+  return html;
+}
+
+function nextOccurrence(dow){
+  const d=new Date();
+  const diff=(dow - d.getDay() + 7) % 7;
+  d.setDate(d.getDate()+diff);
+  return d;
+}
+
+function cycleTplState(dow,meal){
+  const s=gl();
+  if(!s.weekTemplate) s.weekTemplate={};
+  if(!s.weekTemplate[dow]) s.weekTemplate[dow]={};
+  const cur=(s.weekTemplate[dow][meal]&&s.weekTemplate[dow][meal].state)||'off';
+  const next=nextState(cur);
+  const refDay=nextOccurrence(dow);
+  const dayForTime = meal==='desayuno' ? (()=>{ const n=new Date(refDay); n.setDate(n.getDate()+1); return n; })() : refDay;
+  const t=getDefaultTime(dayForTime,meal,next);
+  s.weekTemplate[dow][meal]={state:next,time:t};
+  sl(s); render();
+}
+
+function setTplTime(dow,meal,val){
+  const s=gl();
+  if(!s.weekTemplate) s.weekTemplate={};
+  if(!s.weekTemplate[dow]) s.weekTemplate[dow]={};
+  if(!s.weekTemplate[dow][meal]) s.weekTemplate[dow][meal]={state:'on'};
+  s.weekTemplate[dow][meal].time=val;
+  sl(s);
+}
+
+function clearTpl(){
+  if(!confirm('¿Borrar toda tu semana tipo? Esto no afecta lo que ya tienes guardado en días concretos.')) return;
+  const s=gl();
+  s.weekTemplate={};
+  sl(s); render();
 }
 
 function renderAdmin(s){
@@ -630,10 +778,20 @@ function renderInvitados(s){
 }
 
 /* ── actions ── */
-function cycleState(dk,meal){
+function cycleState(dk,meal,fromTpl){
   const s=gl();
   if(!s.bookings[dk]) s.bookings[dk]={};
-  const cur=(s.bookings[dk][meal]&&s.bookings[dk][meal].state)||'off';
+  let cur;
+  if(s.bookings[dk][meal]&&s.bookings[dk][meal].state!==undefined){
+    cur=s.bookings[dk][meal].state;
+  } else if(fromTpl){
+    // Partir del valor mostrado (de la plantilla) en vez de 'off'
+    const dayObjForTpl=new Date(dk+'T12:00:00');
+    const tplVal=getTplState(s, dayObjForTpl, meal);
+    cur = tplVal ? tplVal.state : 'off';
+  } else {
+    cur='off';
+  }
   const next=nextState(cur);
   const dayObj=new Date(dk+'T12:00:00');
   const t=getDefaultTime(dayObj,meal,next);
