@@ -2,130 +2,184 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<title>Residencia · Comensales</title>
+<meta name="theme-color" content="#0F6E56"/>
+<title>ComiditApp</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;background:#f5f5f3;color:#1a1a1a;min-height:100vh}
-.app{max-width:700px;margin:0 auto;padding:0.75rem}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
-.logo{font-size:16px;font-weight:600;color:#0F6E56}
-.user-pill{display:flex;align-items:center;gap:6px;background:#fff;border:0.5px solid rgba(0,0,0,0.15);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;user-select:none}
-.user-pill:active{background:#f0f0ee}
-.avatar{width:24px;height:24px;border-radius:50%;background:#E1F5EE;color:#0F6E56;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.tab-bar{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
-.tab{padding:6px 14px;border-radius:20px;border:0.5px solid rgba(0,0,0,0.15);background:#fff;cursor:pointer;font-size:13px;color:#666;user-select:none}
-.tab:active{opacity:0.8}
-.tab.active{background:#0F6E56;color:#fff;border-color:#0F6E56}
-.deadline-bar{border-radius:8px;padding:8px 12px;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;font-size:13px}
-.deadline-bar.open{background:#FAEEDA;border:0.5px solid #BA7517;color:#BA7517}
-.deadline-bar.locked{background:#FCEBEB;border:0.5px solid #A32D2D;color:#A32D2D}
-.sync-bar{background:#fff;border:0.5px solid rgba(0,0,0,0.12);border-radius:8px;padding:6px 12px;margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#666}
-.sync-btn{background:none;border:none;color:#0F6E56;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px}
-.sync-btn:active{background:#E1F5EE}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f3;color:#1a1a1a;min-height:100vh;overscroll-behavior-y:none}
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative}
+
+/* ── Header tipo app ── */
+.app-header{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;background:#fff;position:sticky;top:0;z-index:20;border-bottom:0.5px solid rgba(0,0,0,0.08)}
+.app-title-wrap{display:flex;align-items:center;gap:10px}
+.app-icon{width:34px;height:34px;border-radius:10px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.app-title{font-size:17px;font-weight:700;color:#0F6E56;line-height:1.1}
+.app-subtitle{font-size:11px;color:#999;line-height:1.2}
+.user-chip{display:flex;align-items:center;gap:7px;background:#f5f5f3;border-radius:20px;padding:5px 10px 5px 5px}
+.avatar{width:26px;height:26px;border-radius:50%;background:#0F6E56;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.user-chip span{font-size:13px;font-weight:600}
+
+/* ── Sync bar ── */
+.sync-strip{display:flex;align-items:center;justify-content:space-between;padding:6px 16px;font-size:11px;color:#999;background:#fff}
 .sync-ok{color:#0F6E56}
 .sync-err{color:#A32D2D}
 .sync-spin{display:inline-block;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.day-card{background:#fff;border:0.5px solid rgba(0,0,0,0.13);border-radius:12px;margin-bottom:0.75rem;overflow:hidden}
-.day-header{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid rgba(0,0,0,0.1)}
-.day-label{font-weight:600;font-size:14px}
-.day-sub{font-size:11px;color:#A32D2D;margin-top:2px}
-.col-headers{display:grid;grid-template-columns:1fr 1fr 1fr;background:#f8f8f6;border-bottom:0.5px solid rgba(0,0,0,0.07)}
-.col-hdr{text-align:center;padding:5px 4px;font-size:11px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:0.04em}
-.meal-row{display:grid;grid-template-columns:1fr 1fr 1fr}
-.meal-cell{padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;border-right:0.5px solid rgba(0,0,0,0.07)}
-.meal-cell:last-child{border-right:none}
-.state-btn{width:100%;padding:7px 4px;border-radius:8px;border:1px solid transparent;cursor:pointer;font-size:12px;font-weight:600;text-align:center;transition:opacity 0.1s;line-height:1.3;-webkit-tap-highlight-color:transparent}
-.state-btn:active{opacity:0.7}
-.state-btn.off{background:#f0f0ee;border-color:rgba(0,0,0,0.13);color:#999}
-.state-btn.on{background:#E1F5EE;border-color:#1D9E75;color:#0F6E56}
-.state-btn.early{background:#EAF3DE;border-color:#639922;color:#3B6D11}
-.state-btn.late{background:#FAEEDA;border-color:#BA7517;color:#854F0B}
-.state-btn.locked-st{opacity:0.55;cursor:default;pointer-events:none}
-.state-btn.from-tpl{border-style:dashed}
-.tpl-day-card{background:var(--color-background-primary);border:0.5px solid rgba(0,0,0,0.13);border-radius:12px;margin-bottom:0.75rem;overflow:hidden}
-.tpl-day-header{padding:10px 14px;font-weight:600;font-size:14px;border-bottom:0.5px solid rgba(0,0,0,0.1)}
-.tpl-intro{font-size:13px;color:#666;line-height:1.6;margin-bottom:1rem;padding:0 2px}
-.time-wrap{width:100%}
-.time-input{width:100%;padding:4px 5px;border-radius:6px;border:0.5px solid rgba(0,0,0,0.18);font-size:12px;background:#fff;color:#1a1a1a;text-align:center;font-family:inherit}
-.note-row{border-top:0.5px solid rgba(0,0,0,0.07);padding:8px 12px;display:flex;align-items:center;gap:8px}
-.note-row input{flex:1;border:none;background:transparent;font-size:13px;color:#1a1a1a;outline:none;font-family:inherit}
-.note-row input::placeholder{color:#bbb}
-.note-row input:disabled{opacity:0.45}
-.count-pills{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
-.cpill{font-size:11px;padding:2px 7px;border-radius:10px;background:#f0f0ee;color:#999}
-.cpill.on{background:#E1F5EE;color:#0F6E56}
-.cpill.early{background:#EAF3DE;color:#3B6D11}
-.cpill.late{background:#FAEEDA;color:#854F0B}
-/* Setup */
-.setup-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:1.25rem;text-align:center;padding:1rem}
-.setup-screen h2{font-size:20px;font-weight:600}
-.setup-screen p{font-size:14px;color:#666;max-width:300px;line-height:1.6}
-.name-wrap{display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px}
-.name-wrap input{padding:12px 14px;border-radius:10px;border:1px solid rgba(0,0,0,0.2);font-size:16px;background:#fff;color:#1a1a1a;outline:none}
-.name-wrap input:focus{border-color:#0F6E56}
-.name-wrap button{padding:12px;border-radius:10px;background:#0F6E56;color:#fff;border:none;font-size:15px;cursor:pointer;font-weight:600}
-.name-wrap button:active{background:#0a5a45}
-/* Admin */
-.admin-card{background:#fff;border:0.5px solid rgba(0,0,0,0.13);border-radius:12px;margin-bottom:0.75rem;overflow:hidden}
-.admin-hdr{padding:10px 14px;border-bottom:0.5px solid rgba(0,0,0,0.1);font-weight:600;font-size:14px;display:flex;justify-content:space-between;align-items:center}
-.admin-counts{display:grid;grid-template-columns:1fr 1fr 1fr}
-.ac{padding:12px 8px;text-align:center;border-right:0.5px solid rgba(0,0,0,0.07)}
+.sync-refresh{background:none;border:none;color:#0F6E56;font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px}
+
+/* ── Content area ── */
+.content{flex:1;padding:14px 16px 90px;overflow-x:hidden}
+
+/* ── Day carousel (swipe) ── */
+.day-carousel{position:relative}
+.day-carousel-track{display:flex;transition:transform 0.28s cubic-bezier(.22,1,.36,1)}
+.day-slide{flex:0 0 100%;padding-right:0}
+.day-dots{display:flex;justify-content:center;gap:6px;margin-top:14px}
+.day-dot{width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,0.15);transition:all 0.2s}
+.day-dot.active{background:#0F6E56;width:18px;border-radius:3px}
+.day-nav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.day-nav-btn{width:34px;height:34px;border-radius:50%;background:#fff;border:0.5px solid rgba(0,0,0,0.12);display:flex;align-items:center;justify-content:center;color:#666}
+.day-nav-btn:active{background:#f0f0ee}
+.day-nav-btn:disabled{opacity:0.3}
+.day-title-big{font-size:18px;font-weight:700;text-align:center;flex:1}
+.day-title-sub{font-size:12px;color:#999;text-align:center;font-weight:500}
+
+/* ── Meal rows (app-style) ── */
+.meal-card{background:#fff;border-radius:16px;padding:0;margin-bottom:10px;overflow:hidden;border:0.5px solid rgba(0,0,0,0.07)}
+.meal-row-app{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer}
+.meal-row-app:active{background:#fafaf8}
+.meal-row-app+.meal-row-app{border-top:0.5px solid rgba(0,0,0,0.06)}
+.meal-icon-box{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.meal-icon-box.almuerzo{background:#E1F5EE}
+.meal-icon-box.cena{background:#FAEEDA}
+.meal-icon-box.desayuno{background:#E8F0FB}
+.meal-info{flex:1;min-width:0}
+.meal-name{font-size:15px;font-weight:700;line-height:1.2}
+.meal-name small{font-size:11px;color:#aaa;font-weight:500}
+.meal-status{font-size:12px;font-weight:600;margin-top:2px;display:flex;align-items:center;gap:4px}
+.meal-status.off{color:#aaa;font-weight:500}
+.meal-status.on{color:#0F6E56}
+.meal-status.early{color:#3B6D11}
+.meal-status.late{color:#854F0B}
+.meal-status .tpl-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:0.6;flex-shrink:0}
+.meal-chevron{color:#ccc;flex-shrink:0}
+.meal-row-app.locked{opacity:0.55}
+.lock-badge{font-size:10px;color:#A32D2D;display:flex;align-items:center;gap:3px;margin-top:2px;font-weight:600}
+
+/* ── Note row ── */
+.note-card{background:#fff;border-radius:14px;padding:11px 14px;display:flex;align-items:center;gap:9px;border:0.5px solid rgba(0,0,0,0.07);margin-bottom:10px}
+.note-card input{flex:1;border:none;outline:none;font-size:13px;background:transparent;font-family:inherit}
+.note-card input::placeholder{color:#bbb}
+.note-card input:disabled{opacity:0.45}
+
+/* ── Tab bar (bottom, app style) ── */
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:0.5px solid rgba(0,0,0,0.1);display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom));max-width:480px;margin:0 auto;z-index:30}
+.tabbar-item{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;padding:4px;border:none;background:none}
+.tabbar-item i{font-size:21px;color:#bbb}
+.tabbar-item span{font-size:10px;color:#bbb;font-weight:600}
+.tabbar-item.active i,.tabbar-item.active span{color:#0F6E56}
+
+/* ── Bottom sheet (selector emergente) ── */
+.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:90;display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity 0.2s}
+.sheet-overlay.show{opacity:1}
+.sheet{background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:480px;padding:8px 18px calc(20px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform 0.25s cubic-bezier(.22,1,.36,1)}
+.sheet-overlay.show .sheet{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:8px auto 14px}
+.sheet-title{font-size:16px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.sheet-subtitle{font-size:12px;color:#999;margin-bottom:16px}
+.sheet-opts{display:flex;flex-direction:column;gap:8px}
+.sheet-opt{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:14px;border:1.5px solid rgba(0,0,0,0.1);background:#fff}
+.sheet-opt.sel{border-color:#0F6E56;background:#E1F5EE}
+.sheet-opt-label{font-size:15px;font-weight:600}
+.sheet-opt.sel .sheet-opt-label{color:#0F6E56}
+.sheet-time-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding:0 2px}
+.sheet-time-row label{font-size:13px;color:#666;font-weight:500}
+.sheet-time-row input{flex:1;padding:9px 10px;border-radius:10px;border:0.5px solid rgba(0,0,0,0.18);font-size:14px;font-family:inherit}
+.sheet-close{margin-top:14px;width:100%;padding:13px;border-radius:14px;background:#f5f5f3;border:none;font-size:14px;font-weight:600;color:#666}
+
+/* ── Setup / welcome screen ── */
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem 1.5rem;gap:1.75rem;text-align:center}
+.welcome-icon{width:84px;height:84px;border-radius:24px;background:#E1F5EE;display:flex;align-items:center;justify-content:center}
+.welcome-title{font-size:24px;font-weight:700;color:#0F6E56}
+.welcome-subtitle{font-size:13px;color:#999;margin-top:2px}
+.welcome-actions{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px}
+.welcome-btn{width:100%;padding:15px;border-radius:16px;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:9px;border:none}
+.welcome-btn.primary{background:#0F6E56;color:#fff}
+.welcome-btn.primary:active{background:#0a5a45}
+.welcome-btn.secondary{background:#fff;color:#1a1a1a;border:0.5px solid rgba(0,0,0,0.15)}
+.welcome-btn.secondary:active{background:#f5f5f3}
+.welcome-avatar-mini{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:11px}
+.welcome-switch{font-size:12px;color:#999;margin-top:0.25rem}
+.welcome-switch span{color:#0F6E56;font-weight:600}
+.name-input-wrap{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px}
+.name-input-wrap input{padding:14px;border-radius:14px;border:1px solid rgba(0,0,0,0.18);font-size:16px;outline:none;font-family:inherit;text-align:center}
+.name-input-wrap input:focus{border-color:#0F6E56}
+
+/* ── Admin view ── */
+.admin-summary-card{background:#fff;border-radius:16px;margin-bottom:10px;overflow:hidden;border:0.5px solid rgba(0,0,0,0.07)}
+.admin-summary-hdr{padding:12px 14px;border-bottom:0.5px solid rgba(0,0,0,0.07);display:flex;justify-content:space-between;align-items:center}
+.admin-summary-title{font-size:14px;font-weight:700}
+.admin-summary-count{font-size:11px;color:#999;font-weight:600}
+.admin-counts-row{display:grid;grid-template-columns:1fr 1fr 1fr}
+.ac{padding:12px 6px;text-align:center;border-right:0.5px solid rgba(0,0,0,0.06)}
 .ac:last-child{border-right:none}
-.ac-label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px}
-.ac-num-wrap{display:flex;align-items:baseline;justify-content:center;gap:4px;flex-wrap:wrap;min-height:38px}
-.ac-num-main{font-size:26px;font-weight:700;color:#0F6E56;line-height:1}
-.ac-num-main.zero{color:#bbb;font-size:22px}
-.ac-badge{font-size:11px;font-weight:700;padding:2px 5px;border-radius:8px;line-height:1.4;white-space:nowrap}
+.ac-label{font-size:10px;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:4px}
+.ac-num-wrap{display:flex;align-items:baseline;justify-content:center;gap:3px;flex-wrap:wrap;min-height:32px}
+.ac-num-main{font-size:23px;font-weight:700;color:#0F6E56;line-height:1}
+.ac-num-main.zero{color:#ccc;font-size:19px}
+.ac-badge{font-size:10px;font-weight:700;padding:2px 5px;border-radius:7px;line-height:1.4;white-space:nowrap}
 .ac-badge.early{background:#EAF3DE;color:#3B6D11;border:1px solid #639922}
 .ac-badge.late{background:#FAEEDA;color:#854F0B;border:1px solid #BA7517}
-.ac-names{padding:4px 12px 10px;display:flex;flex-wrap:wrap;gap:4px}
-.ntag{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
-.ntag.on{background:#E1F5EE;color:#0F6E56}
-.ntag.early{background:#EAF3DE;color:#3B6D11}
-.ntag.late{background:#FAEEDA;color:#854F0B}
-.day-note-admin{font-size:12px;color:#854F0B;background:#FAEEDA;padding:6px 14px;border-top:0.5px solid rgba(0,0,0,0.05);display:flex;gap:6px;align-items:center}
-.admin-meal-line{padding:4px 14px 6px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;border-top:0.5px solid rgba(0,0,0,0.05)}
-.admin-meal-verb{font-size:12px;font-weight:600;color:#444;white-space:nowrap;flex-shrink:0}
+.admin-meal-line{padding:5px 14px 7px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;border-top:0.5px solid rgba(0,0,0,0.05)}
+.admin-meal-verb{font-size:11px;font-weight:700;color:#444;white-space:nowrap;flex-shrink:0}
 .admin-meal-tags{display:flex;flex-wrap:wrap;gap:4px}
-/* Guests */
-.section-title{font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.06em;margin:1rem 0 0.5rem 2px}
-.guests-mgr{background:#fff;border:0.5px solid rgba(0,0,0,0.13);border-radius:12px;padding:1rem;margin-bottom:0.75rem}
-.guests-mgr h4{font-size:14px;font-weight:600;margin-bottom:0.75rem;display:flex;align-items:center;gap:6px}
+.ntag{padding:2px 8px;border-radius:9px;font-size:10px;font-weight:600}
+.day-note-admin{font-size:11px;color:#854F0B;background:#FAEEDA;padding:7px 14px;display:flex;gap:6px;align-items:center;border-top:0.5px solid rgba(0,0,0,0.05)}
+
+/* ── Semana tipo / Invitados (reuse card style) ── */
+.tpl-day-card,.guests-mgr{background:#fff;border-radius:16px;margin-bottom:10px;overflow:hidden;border:0.5px solid rgba(0,0,0,0.07);padding:0}
+.tpl-day-header{padding:11px 14px;font-weight:700;font-size:14px;border-bottom:0.5px solid rgba(0,0,0,0.07)}
+.tpl-intro{font-size:12px;color:#999;line-height:1.6;margin-bottom:14px;padding:0 2px}
+.guests-mgr{padding:14px}
+.guests-mgr h4{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .guest-row-item{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.guest-row-item input{flex:1;padding:8px 10px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.18);font-size:13px;background:#fff;color:#1a1a1a;outline:none;font-family:inherit}
-.guest-row-item input:focus{border-color:#0F6E56}
-.del-btn{width:30px;height:30px;border-radius:50%;border:0.5px solid rgba(0,0,0,0.1);background:#FCEBEB;color:#A32D2D;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.add-btn{font-size:13px;color:#0F6E56;background:none;border:none;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:5px;font-weight:500}
-.guest-name-label{border-top:0.5px solid rgba(0,0,0,0.07);padding:6px 12px 2px;font-size:12px;color:#888;font-weight:500}
+.guest-row-item input{flex:1;padding:9px 10px;border-radius:10px;border:0.5px solid rgba(0,0,0,0.15);font-size:13px;font-family:inherit;outline:none}
+.del-btn{width:30px;height:30px;border-radius:50%;border:none;background:#FCEBEB;color:#A32D2D;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.add-btn{font-size:13px;color:#0F6E56;background:none;border:none;display:flex;align-items:center;gap:5px;font-weight:700;padding:4px 0}
+.guest-name-label{padding:8px 14px 2px;font-size:11px;color:#999;font-weight:700;border-top:0.5px solid rgba(0,0,0,0.06)}
+.section-title{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;margin:1rem 0 8px 2px}
 </style>
 </head>
 <body>
-<div class="app"><div id="mc"></div></div>
+<div class="app" id="app">
+  <div id="root"></div>
+</div>
 <script>
+/* ════════ CONFIG ════════ */
 const API_URL = 'https://script.google.com/macros/s/AKfycbyL04xgWxYT-ri0t2_5PUmYWMvLnBt1JWsm73-nRhPh7RXxY5JkIZ_QRPt5LMdodkOMsA/exec';
 const SECRET  = 'residencia2025';
 
 const MEALS_USER  = ['almuerzo','cena','desayuno'];
 const MEALS_ADMIN = ['almuerzo','cena','desayuno'];
-const MEAL_ICON   = {almuerzo:'🍽',cena:'🌙',desayuno:'☀️'};
+const MEAL_ICON   = {almuerzo:'<i class="ti ti-tools-kitchen-2"></i>',cena:'<i class="ti ti-moon"></i>',desayuno:'<i class="ti ti-sun"></i>'};
+const MEAL_LABEL  = {almuerzo:'Almuerzo', cena:'Cena', desayuno:'Desayuno'};
+
 const DEFAULT_TIMES_BY_DOW = {
-  // 0=domingo,1=lunes,...,6=sábado
-  lv: { // lunes-viernes (1-5)
+  lv: {
     desayuno: {on:'07:30', early:'06:30', late:'09:00'},
     almuerzo: {on:'13:30', early:'13:00', late:'15:00'},
     cena:     {on:'20:30', early:'20:00', late:'21:45'}
   },
-  sab: { // sábado (6)
+  sab: {
     desayuno: {on:'08:00', early:'07:00', late:'09:30'},
     almuerzo: {on:'13:30', early:'13:00', late:'15:00'},
     cena:     {on:'20:30', early:'20:00', late:'21:45'}
   },
-  dom: { // domingo (0)
+  dom: {
     desayuno: {on:'09:00', early:'08:00', late:'09:45'},
     almuerzo: {on:'13:30', early:'13:00', late:'15:00'},
     cena:     {on:'20:00', early:'19:30', late:'21:45'}
@@ -142,20 +196,23 @@ function getDefaultTime(date,meal,state){
   return dt[meal][state==='off'?'on':state]||'00:00';
 }
 const STATES      = ['off','on','early','late'];
-const STATE_LABEL = {off:'—', on:'Normal', early:'Temprano', late:'Tarde'};
+const STATE_LABEL = {off:'No come', on:'Normal', early:'Temprano', late:'Tarde'};
 const DAYS_ES     = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const DAYS_ES_SHORT = ['dom','lun','mar','mié','jue','vie','sáb'];
 const MONTHS_ES   = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
 let currentTab = 'mi-vista';
+let currentDayIdx = 0; // índice del día activo en el carrusel de Mi vista
 let remoteData  = {};
+let syncStatus  = 'idle';
+let lastSync    = null;
+let saveTimers  = {};
 
-// Normalizar cualquier fecha a YYYY-MM-DD (por si el Sheet devuelve formato largo)
+/* ════════ NORMALIZACIÓN DE FECHAS ════════ */
 function normalizeFecha(f){
   if(!f) return '';
   f = String(f).trim();
-  // Ya está en formato correcto
   if(/^\d{4}-\d{2}-\d{2}$/.test(f)) return f;
-  // Formato largo: "Mon Jun 08 2026 00:00:00..."
   const d = new Date(f);
   if(!isNaN(d.getTime())){
     const y=d.getFullYear();
@@ -165,59 +222,42 @@ function normalizeFecha(f){
   }
   return f;
 }
-
-// Normalizar remoteData: convertir todas las fechas a YYYY-MM-DD
 function normalizeRemoteData(raw){
   const out={};
   Object.keys(raw).forEach(usuario=>{
     out[usuario]={};
     Object.keys(raw[usuario]).forEach(fecha=>{
-      const fNorm=normalizeFecha(fecha);
-      out[usuario][fNorm]=raw[usuario][fecha];
+      out[usuario][normalizeFecha(fecha)]=raw[usuario][fecha];
     });
   });
   return out;
 }
-let syncStatus  = 'idle';
-let lastSync    = null;
-let saveTimers  = {};
 
-/* ── local storage ── */
+/* ════════ LOCAL STORAGE ════════ */
 function gl(){
   try{
-    const s = JSON.parse(localStorage.getItem('res_v4')||'null');
-    if(s && !s.weekTemplate) s.weekTemplate={}; // migración para usuarios existentes
+    const s = JSON.parse(localStorage.getItem('comiditapp_v1')||'null');
+    if(s && !s.weekTemplate) s.weekTemplate={};
     return s;
   }catch(e){ return null; }
 }
-function sl(s){ localStorage.setItem('res_v4', JSON.stringify(s)); }
-function initS(name){ const s={userName:name,bookings:{},dayNotes:{},guests:[],guestBookings:{},weekTemplate:{}}; sl(s); return s; }
+function sl(s){ localStorage.setItem('comiditapp_v1', JSON.stringify(s)); }
+function initS(name){ const s={userName:name,bookings:{},dayNotes:{},guests:[],guestBookings:{},weekTemplate:{},isAdmin:false}; sl(s); return s; }
 
-/* ── helpers ── */
+/* ════════ HELPERS DE FECHA ════════ */
 function get7Days(){ const d=new Date(),r=[]; for(let i=0;i<7;i++){ const x=new Date(d); x.setDate(d.getDate()+i); r.push(x); } return r; }
 function dayKey(d){ return d.toISOString().slice(0,10); }
 function getDeadline(date){
-  // Devuelve {h, m} del deadline según día de semana
   const dow=date.getDay();
-  if(dow===0) return {h:10,m:0};   // domingo
-  if(dow===6) return {h:9,m:15};   // sábado
-  return {h:8,m:30};               // lunes-viernes
+  if(dow===0) return {h:10,m:0};
+  if(dow===6) return {h:9,m:15};
+  return {h:8,m:30};
 }
-// Devuelve si una comida específica está bloqueada
-// Desayuno del día X se bloquea con el deadline del día X-1
-// Almuerzo y Cena del día X se bloquean con el deadline del día X
 function isMealLocked(date, meal){
   const now=new Date();
   const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-
-  // El desayuno de la tarjeta del día X se come el día X+1.
-  // Su deadline es el del día X (misma tarjeta).
-  // Almuerzo y cena: su deadline es el del día X.
-  // → En todos los casos, reportDay = date (la tarjeta)
   const reportDay = new Date(date);
-
   const tgt=new Date(reportDay.getFullYear(),reportDay.getMonth(),reportDay.getDate());
-
   if(tgt<today) return true;
   if(tgt.getTime()===today.getTime()){
     const dl=getDeadline(reportDay);
@@ -225,16 +265,21 @@ function isMealLocked(date, meal){
   }
   return false;
 }
-
-// Compatibilidad: día bloqueado si todas las comidas están bloqueadas
 function isLocked(date){
   return isMealLocked(date,'almuerzo') && isMealLocked(date,'cena') && isMealLocked(date,'desayuno');
 }
 function fmtDate(d){ return DAYS_ES[d.getDay()]+' '+d.getDate()+' de '+MONTHS_ES[d.getMonth()]; }
+function fmtDateShort(d){ return DAYS_ES_SHORT[d.getDay()]+' '+d.getDate(); }
 function initials(n){ return n.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2); }
 function nextState(cur){ return STATES[(STATES.indexOf(cur)+1)%STATES.length]; }
+function nextOccurrence(dow){
+  const d=new Date();
+  const diff=(dow - d.getDay() + 7) % 7;
+  d.setDate(d.getDate()+diff);
+  return d;
+}
 
-// Paleta de 12 colores acuosos, uno por usuario
+/* ════════ PALETA DE COLORES POR USUARIO ════════ */
 const COLOR_PALETTE = [
   {bg:'#E1F5EE',border:'#1D9E75',text:'#0F6E56'},
   {bg:'#E8F0FB',border:'#5B8DEF',text:'#2355B0'},
@@ -259,9 +304,8 @@ function colorForName(name){
   return _colorMap[name];
 }
 
-/* ── API vía JSONP (evita CORS con Google Apps Script) ── */
+/* ════════ API JSONP ════════ */
 let _cbCounter = 0;
-
 function jsonp(params){
   return new Promise((resolve)=>{
     const cbName = '_cb' + (++_cbCounter);
@@ -271,7 +315,6 @@ function jsonp(params){
       if(tag) tag.remove();
       resolve({ok:false, error:'timeout'});
     }, 10000);
-
     window[cbName] = function(data){
       clearTimeout(timeout);
       delete window[cbName];
@@ -279,7 +322,6 @@ function jsonp(params){
       if(tag) tag.remove();
       resolve(data);
     };
-
     const qs = new URLSearchParams({...params, secret:SECRET, callback:cbName}).toString();
     const script = document.createElement('script');
     script.id = cbName;
@@ -304,35 +346,25 @@ async function loadRemote(){
   render();
 }
 
-// Recorre los próximos 7 días; para cualquier comida sin selección manual
-// (ni local ni remota) que tenga valor en la semana tipo, la sincroniza al Sheet.
-// Así el residente nunca necesita "confirmar" su rutina habitual.
 function autoSyncTemplate(){
   const s=gl();
-  if(!s||!s.weekTemplate||!Object.keys(s.weekTemplate).length) return;
+  if(!s||s.isAdmin||!s.weekTemplate||!Object.keys(s.weekTemplate).length) return;
   const days=get7Days();
   let changed=false;
-
   days.forEach(day=>{
     const dk=dayKey(day);
     const nextDay=new Date(day); nextDay.setDate(day.getDate()+1);
     const dkNext=dayKey(nextDay);
-
     MEALS_USER.forEach(m=>{
       const storeDk = m==='desayuno' ? dkNext : dk;
       const dowDate = m==='desayuno' ? nextDay : day;
-      if(isMealLocked(day,m)) return; // no tocar comidas ya cerradas
-
+      if(isMealLocked(day,m)) return;
       const hasLocalManual = s.bookings[storeDk] && s.bookings[storeDk][m] && s.bookings[storeDk][m].state!==undefined;
-      if(hasLocalManual) return; // el usuario ya decidió algo concreto este día
-
+      if(hasLocalManual) return;
       const hasRemote = remoteData[s.userName] && remoteData[s.userName][storeDk] && remoteData[s.userName][storeDk][m];
-      if(hasRemote) return; // ya está en el Sheet (quizá puesto desde otro dispositivo)
-
+      if(hasRemote) return;
       const tplVal=getTplState(s, dowDate, m);
-      if(!tplVal || tplVal.state==='off') return; // sin plantilla o plantilla dice "no come": no hay nada que mandar
-
-      // Aplicar y sincronizar
+      if(!tplVal || tplVal.state==='off') return;
       if(!s.bookings[storeDk]) s.bookings[storeDk]={};
       s.bookings[storeDk][m]={state:tplVal.state, time:tplVal.time};
       const nota=(s.dayNotes&&s.dayNotes[storeDk])||'';
@@ -340,200 +372,647 @@ function autoSyncTemplate(){
       changed=true;
     });
   });
-
   if(changed) sl(s);
 }
 
 async function saveRow(usuario,fecha,comida,estado,hora,nota){
   await jsonp({action:'save',usuario,fecha,comida,estado,hora,nota});
 }
-
 function schedSave(usuario,fecha,comida,estado,hora,nota){
   const key=usuario+'_'+fecha+'_'+comida;
   clearTimeout(saveTimers[key]);
   saveTimers[key]=setTimeout(()=>saveRow(usuario,fecha,comida,estado,hora,nota),900);
 }
 
-/* ── sync bar ── */
 function renderSyncBar(){
-  const el=document.getElementById('sync-bar');
+  const el=document.getElementById('sync-strip');
   if(!el) return;
   let icon,msg;
   if(syncStatus==='loading'){
-    icon='<span class="sync-spin">↻</span>'; msg='Sincronizando…';
+    icon='<span class="sync-spin"><i class="ti ti-refresh"></i></span>'; msg='Sincronizando…';
   } else if(syncStatus==='ok'){
     icon='<span class="sync-ok"><i class="ti ti-circle-check"></i></span>';
-    msg='Datos actualizados · '+(lastSync?lastSync.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}):'');
+    msg='Actualizado · '+(lastSync?lastSync.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}):'');
   } else {
     icon='<span class="sync-err"><i class="ti ti-alert-circle"></i></span>';
     msg='Sin conexión — datos locales';
   }
   el.innerHTML=`<span style="display:flex;align-items:center;gap:5px">${icon} ${msg}</span>
-    <button class="sync-btn" onclick="loadRemote()"><i class="ti ti-refresh"></i> Actualizar</button>`;
+    <button class="sync-refresh" onclick="loadRemote()"><i class="ti ti-refresh"></i> Actualizar</button>`;
 }
 
-/* ── main render ── */
+/* ════════ SEMANA TIPO HELPERS ════════ */
+function getTplState(s, dowDate, meal){
+  const dow=dowDate.getDay();
+  const tpl=(s.weekTemplate&&s.weekTemplate[dow])||null;
+  if(!tpl||!tpl[meal]) return null;
+  return tpl[meal];
+}
+
+/* ════════ RENDER PRINCIPAL ════════ */
 function render(){
   const s=gl();
-  if(!s){ renderSetup(); return; }
+  if(!s){ renderWelcome(null); return; }
+  if(!s.userName && !s.isAdmin){ renderWelcome(s); return; }
+  if(s.pendingChoice){ renderWelcome(s); return; }
   renderApp(s);
 }
 
-function renderSetup(){
-  document.getElementById('mc').innerHTML=`
-    <div class="setup-screen">
-      <div style="font-size:48px">🍽</div>
-      <h2>Bienvenido a la residencia</h2>
-      <p>¿Cómo te llamas? Se guardará en este dispositivo para futuros accesos.</p>
-      <div class="name-wrap">
-        <input id="sname" type="text" placeholder="Tu nombre o iniciales" maxlength="30" autocomplete="off"/>
-        <button onclick="doSetup()">Entrar</button>
+function renderWelcome(s){
+  const hasProfile = s && (s.userName || s.isAdmin) && !s.pendingChoice;
+  const savedName = s ? (s.savedUserName||s.userName) : null;
+
+  if(s && s.askingName){
+    document.getElementById('root').innerHTML=`
+      <div class="welcome">
+        <div class="welcome-icon"><i class="ti ti-tools-kitchen-2" style="font-size:38px;color:#0F6E56"></i></div>
+        <div>
+          <div class="welcome-title">ComiditApp</div>
+          <div class="welcome-subtitle">¿Cómo te llamas?</div>
+        </div>
+        <div class="name-input-wrap">
+          <input id="sname" type="text" placeholder="Tus iniciales o nombre" maxlength="30" autocomplete="off"/>
+          <button class="welcome-btn primary" onclick="doSetup()"><i class="ti ti-check"></i> Listo</button>
+        </div>
+      </div>`;
+    setTimeout(()=>{ const e=document.getElementById('sname'); if(e) e.focus(); },100);
+    return;
+  }
+
+  if(savedName){
+    document.getElementById('root').innerHTML=`
+      <div class="welcome">
+        <div class="welcome-icon"><i class="ti ti-tools-kitchen-2" style="font-size:38px;color:#0F6E56"></i></div>
+        <div>
+          <div class="welcome-title">ComiditApp</div>
+          <div class="welcome-subtitle">A la Mesa · Residencia</div>
+        </div>
+        <div class="welcome-actions">
+          <button class="welcome-btn primary" onclick="enterAsUser('${savedName.replace(/'/g,"\\'")}')">
+            <span class="welcome-avatar-mini">${initials(savedName)}</span>
+            Entrar como ${savedName}
+          </button>
+          <button class="welcome-btn secondary" onclick="enterAsAdmin()">
+            <i class="ti ti-eye"></i> Administración
+          </button>
+        </div>
+        <div class="welcome-switch">¿No eres ${savedName}? <span onclick="switchUser()">Cambiar usuario</span></div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('root').innerHTML=`
+    <div class="welcome">
+      <div class="welcome-icon"><i class="ti ti-tools-kitchen-2" style="font-size:38px;color:#0F6E56"></i></div>
+      <div>
+        <div class="welcome-title">ComiditApp</div>
+        <div class="welcome-subtitle">A la Mesa · Residencia</div>
+      </div>
+      <div class="welcome-actions">
+        <button class="welcome-btn primary" onclick="askName()"><i class="ti ti-user"></i> Soy residente</button>
+        <button class="welcome-btn secondary" onclick="enterAsAdmin()"><i class="ti ti-eye"></i> Administración</button>
       </div>
     </div>`;
-  setTimeout(()=>{ const e=document.getElementById('sname'); if(e) e.focus(); },100);
+}
+
+function askName(){
+  let s=gl();
+  if(!s) s=initS('');
+  s.askingName=true; s.pendingChoice=false;
+  sl(s); render();
 }
 
 function doSetup(){
   const n=(document.getElementById('sname')||{}).value||'';
   if(!n.trim()) return;
-  initS(n.trim()); loadRemote();
+  let s=gl();
+  if(!s) s=initS(n.trim());
+  s.userName=n.trim();
+  s.savedUserName=n.trim();
+  s.isAdmin=false;
+  s.askingName=false;
+  s.pendingChoice=false;
+  sl(s);
+  loadRemote();
 }
 
+function enterAsUser(name){
+  const s=gl();
+  s.userName=name;
+  s.isAdmin=false;
+  s.pendingChoice=false;
+  sl(s);
+  loadRemote();
+}
+
+function enterAsAdmin(){
+  let s=gl();
+  if(!s) s=initS('');
+  s.isAdmin=true;
+  s.pendingChoice=false;
+  currentTab='admin';
+  sl(s);
+  loadRemote();
+}
+
+function switchUser(){
+  const s=gl();
+  s.pendingChoice=true;
+  s.userName='';
+  s.isAdmin=false;
+  sl(s); render();
+}
+
+/* ════════ APP PRINCIPAL ════════ */
 function renderApp(s){
-  const now=new Date();
-  const dl=getDeadline(now);
-  const todayLocked=(now.getHours()>dl.h||(now.getHours()===dl.h&&now.getMinutes()>=dl.m));
-  const minsLeft=(dl.h*60+dl.m)-(now.getHours()*60+now.getMinutes());
   let html=`
-    <div class="topbar">
-      <div class="logo">🍽 Residencia</div>
-      <div class="user-pill" onclick="changeUser()">
-        <div class="avatar">${initials(s.userName)}</div>
-        <span>${s.userName}</span>
-        <i class="ti ti-chevron-down" style="font-size:12px;color:#999"></i>
-      </div>
-    </div>
-    <div class="tab-bar">
-      <div class="tab ${currentTab==='mi-vista'?'active':''}" onclick="switchTab('mi-vista')"><i class="ti ti-calendar"></i> Mi vista</div>
-      <div class="tab ${currentTab==='semana-tipo'?'active':''}" onclick="switchTab('semana-tipo')"><i class="ti ti-repeat"></i> Mi semana tipo</div>
-      <div class="tab ${currentTab==='admin'?'active':''}" onclick="switchTab('admin')"><i class="ti ti-eye"></i> Administración</div>
-      <div class="tab ${currentTab==='invitados'?'active':''}" onclick="switchTab('invitados')"><i class="ti ti-user-plus"></i> Invitados</div>
-    </div>
-    <div class="deadline-bar ${todayLocked?'locked':'open'}">
-      <i class="ti ti-${todayLocked?'lock':'clock'}"></i>
-      ${todayLocked
-        ? ('Deadline pasado — edición cerrada para hoy ('+dl.h+':'+String(dl.m).padStart(2,'0')+' am)')
-        : ('Deadline hoy a las '+dl.h+':'+String(dl.m).padStart(2,'0')+' am — faltan <strong>'+minsLeft+' min</strong>')}
-    </div>
-    <div class="sync-bar" id="sync-bar"><span>Cargando…</span></div>`;
-
-  if(currentTab==='mi-vista')        html+=renderMiVista(s);
-  else if(currentTab==='semana-tipo') html+=renderSemanaTipo(s);
-  else if(currentTab==='admin')       html+=renderAdmin(s);
-  else                                html+=renderInvitados(s);
-
-  document.getElementById('mc').innerHTML=html;
-  renderSyncBar();
-}
-
-/* ── Mi Vista ── */
-function getTplState(s, dowDate, meal){
-  // dowDate: objeto Date del día cuyo día de semana se consulta
-  const dow=dowDate.getDay(); // 0=domingo..6=sábado
-  const tpl=(s.weekTemplate&&s.weekTemplate[dow])||null;
-  if(!tpl||!tpl[meal]) return null;
-  return tpl[meal]; // {state, time}
-}
-
-function renderMiVista(s){
-  const days=get7Days();
-  let html='';
-  days.forEach((day,idx)=>{
-    const dk=dayKey(day);
-    // El desayuno que aparece en la tarjeta del día X se COME el día X
-    // pero se reporta el día X-1 junto con almuerzo y cena de X-1
-    // Por tanto se guarda con la clave del día X (cuando se come)
-    // y en Admin se busca como dkNext del día X-1 → correcto
-    const nextDay=new Date(day); nextDay.setDate(day.getDate()+1);
-    const dkNext=dayKey(nextDay); // clave del desayuno de esta tarjeta visto desde admin
-    const locked=isLocked(day);
-    // Para pills y lectura: desayuno usa dkNext como clave de almacenamiento
-    const b=s.bookings[dk]||{};
-    const bNext=s.bookings[dkNext]||{};
-    const note=(s.dayNotes&&s.dayNotes[dk])||'';
-    let pills='';
-    MEALS_USER.forEach(m=>{
-      const bk = m==='desayuno' ? bNext : b;
-      let st=(bk[m]&&bk[m].state);
-      if(st===undefined){
-        const dowDate = m==='desayuno' ? nextDay : day;
-        const tplVal = getTplState(s, dowDate, m);
-        st = tplVal ? tplVal.state : 'off';
-      }
-      pills+=`<span class="cpill ${st}">${MEAL_ICON[m]}${st!=='off'?' '+STATE_LABEL[st]:''}</span>`;
-    });
-    html+=`<div class="day-card">
-      <div class="day-header">
+    <div class="app-header">
+      <div class="app-title-wrap">
+        <div class="app-icon"><i class="ti ti-tools-kitchen-2" style="font-size:18px;color:#0F6E56"></i></div>
         <div>
-          <div class="day-label">${idx===0?'<span style="color:#0F6E56">Hoy</span> — ':''}${fmtDate(day)}</div>
-          ${locked?`<div class="day-sub"><i class="ti ti-lock"></i> ${idx===0?'Cerrado (pasó el deadline)':'Día pasado'}</div>`:''}
+          <div class="app-title">ComiditApp</div>
+          <div class="app-subtitle">${s.isAdmin?'Administración':'A la Mesa'}</div>
         </div>
-        <div class="count-pills">${pills}</div>
       </div>
-      <div class="col-headers">
-        <div class="col-hdr">${MEAL_ICON.almuerzo} Almuerzo</div>
-        <div class="col-hdr">${MEAL_ICON.cena} Cena</div>
-        <div class="col-hdr">${MEAL_ICON.desayuno} Desayuno <span style="font-size:9px;color:#bbb;display:block;font-weight:400">(${DAYS_ES[nextDay.getDay()]})</span></div>
-      </div>
-      <div class="meal-row">`;
-    MEALS_USER.forEach(m=>{
-      // El desayuno usa dkNext como clave (día en que se come = mañana)
-      const storeDk = m==='desayuno' ? dkNext : dk;
-      const bk = m==='desayuno' ? bNext : b;
-      const info=bk[m];
-      const dayForTime = m==='desayuno' ? nextDay : day;
-      let st, t, fromTpl=false;
-      if(info && info.state!==undefined){
-        // Ya hay selección manual guardada para este día específico
-        st=info.state; t=info.time||getDefaultTime(dayForTime,m,st);
-      } else {
-        // Sin selección manual: usar plantilla semanal si existe
-        const tplVal=getTplState(s, dayForTime, m);
-        if(tplVal){ st=tplVal.state; t=tplVal.time||getDefaultTime(dayForTime,m,st); fromTpl=true; }
-        else { st='off'; t=getDefaultTime(dayForTime,m,st); }
+      ${s.isAdmin?
+        `<button class="user-chip" onclick="switchUser()" style="border:none"><i class="ti ti-eye" style="font-size:15px;color:#666"></i><span>Admin</span></button>`
+        :`<button class="user-chip" onclick="switchUser()" style="border:none"><span class="avatar">${initials(s.userName)}</span><span>${s.userName}</span></button>`
       }
-      const mLocked=isMealLocked(day,m);
-      html+=`<div class="meal-cell">
-        ${fromTpl&&st!=='off'?'<div style="font-size:9px;color:var(--color-text-tertiary,#aaa);display:flex;align-items:center;gap:2px;margin-bottom:1px"><i class="ti ti-point-filled" style="font-size:6px" aria-hidden="true"></i>semana tipo</div>':''}
-        <button class="state-btn ${st}${fromTpl?' from-tpl':''}${mLocked?' locked-st':''}"
-          ${!mLocked?`onclick="cycleState('${storeDk}','${m}',${fromTpl})"`:''}>${st==='off'?'<i class="ti ti-x" style="opacity:0.3"></i>':STATE_LABEL[st]}</button>
-        ${st!=='off'&&!mLocked?`<div class="time-wrap"><input class="time-input" type="time" value="${t}" onchange="setTime('${storeDk}','${m}',this.value)"/></div>`:''}
-        ${st!=='off'&&mLocked?`<div style="font-size:11px;color:#999;margin-top:2px">${t}</div>`:''}
+    </div>
+    <div class="sync-strip" id="sync-strip">Cargando…</div>
+    <div class="content" id="content"></div>`;
+
+  if(!s.isAdmin){
+    html+=`
+      <div class="tabbar">
+        <button class="tabbar-item ${currentTab==='mi-vista'?'active':''}" onclick="switchTab('mi-vista')"><i class="ti ti-calendar"></i><span>Mi vista</span></button>
+        <button class="tabbar-item ${currentTab==='semana-tipo'?'active':''}" onclick="switchTab('semana-tipo')"><i class="ti ti-repeat"></i><span>Semana tipo</span></button>
+        <button class="tabbar-item ${currentTab==='invitados'?'active':''}" onclick="switchTab('invitados')"><i class="ti ti-user-plus"></i><span>Invitados</span></button>
       </div>`;
-    });
-    html+=`</div>
-      <div class="note-row">
-        <i class="ti ti-pencil" style="font-size:14px;color:#ccc;flex-shrink:0"></i>
-        <input type="text" placeholder="Nota del día (dieta blanda, sin ají…)"
-          value="${note.replace(/"/g,'&quot;')}"
-          ${locked?'disabled':''}
-          onchange="setDayNote('${dk}',this.value)"/>
+  }
+
+  document.getElementById('root').innerHTML=html;
+  renderSyncBar();
+
+  const content=document.getElementById('content');
+  if(s.isAdmin){ content.innerHTML=renderAdmin(s); }
+  else if(currentTab==='mi-vista'){ content.innerHTML=renderMiVistaCarousel(s); attachSwipe(); }
+  else if(currentTab==='semana-tipo'){ content.innerHTML=renderSemanaTipo(s); }
+  else { content.innerHTML=renderInvitados(s); }
+}
+
+function switchTab(t){ currentTab=t; render(); }
+
+/* ════════ MI VISTA — CARRUSEL DE DÍAS ════════ */
+function renderMiVistaCarousel(s){
+  const days=get7Days();
+  if(currentDayIdx<0) currentDayIdx=0;
+  if(currentDayIdx>6) currentDayIdx=6;
+
+  let slides='';
+  days.forEach((day,idx)=>{ slides+=`<div class="day-slide">${renderDaySlide(s,day,idx)}</div>`; });
+
+  let dots='';
+  days.forEach((d,idx)=>{ dots+=`<span class="day-dot ${idx===currentDayIdx?'active':''}" onclick="goToDay(${idx})"></span>`; });
+
+  const day=days[currentDayIdx];
+
+  return `
+    <div class="day-nav-row">
+      <button class="day-nav-btn" onclick="goToDay(${currentDayIdx-1})" ${currentDayIdx===0?'disabled':''}><i class="ti ti-chevron-left"></i></button>
+      <div>
+        <div class="day-title-big">${currentDayIdx===0?'Hoy':DAYS_ES[day.getDay()]}</div>
+        <div class="day-title-sub">${fmtDate(day)}</div>
       </div>
+      <button class="day-nav-btn" onclick="goToDay(${currentDayIdx+1})" ${currentDayIdx===6?'disabled':''}><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <div class="day-carousel" id="day-carousel">
+      <div class="day-carousel-track" id="day-track" style="transform:translateX(-${currentDayIdx*100}%)">
+        ${slides}
+      </div>
+    </div>
+    <div class="day-dots">${dots}</div>`;
+}
+
+function goToDay(idx){
+  if(idx<0||idx>6) return;
+  currentDayIdx=idx;
+  const track=document.getElementById('day-track');
+  if(track) track.style.transform=`translateX(-${idx*100}%)`;
+  // re-render nav row + dots without losing transition
+  const s=gl();
+  setTimeout(()=>{ render(); }, 220);
+}
+
+function renderDaySlide(s, day, idx){
+  const dk=dayKey(day);
+  const nextDay=new Date(day); nextDay.setDate(day.getDate()+1);
+  const dkNext=dayKey(nextDay);
+  const locked=isLocked(day);
+  const b=s.bookings[dk]||{};
+  const bNext=s.bookings[dkNext]||{};
+  const note=(s.dayNotes&&s.dayNotes[dk])||'';
+
+  let rows='';
+  MEALS_USER.forEach(m=>{
+    const storeDk = m==='desayuno' ? dkNext : dk;
+    const bk = m==='desayuno' ? bNext : b;
+    const info=bk[m];
+    const dayForTime = m==='desayuno' ? nextDay : day;
+    let st, t, fromTpl=false;
+    if(info && info.state!==undefined){ st=info.state; t=info.time||getDefaultTime(dayForTime,m,st); }
+    else {
+      const tplVal=getTplState(s, dayForTime, m);
+      if(tplVal){ st=tplVal.state; t=tplVal.time||getDefaultTime(dayForTime,m,st); fromTpl=true; }
+      else { st='off'; t=getDefaultTime(dayForTime,m,st); }
+    }
+    const mLocked=isMealLocked(day,m);
+    const suffix = m==='desayuno' ? `<small> · ${DAYS_ES_SHORT[nextDay.getDay()]}</small>` : '';
+    const statusText = st==='off' ? 'No come' : (STATE_LABEL[st]+' · '+fmtTime12(t));
+
+    rows+=`<div class="meal-row-app ${mLocked?'locked':''}" ${!mLocked?`onclick="openMealSheet('${storeDk}','${m}',${idx},${fromTpl})"`:''}>
+      <div class="meal-icon-box ${m}">${MEAL_ICON[m]}</div>
+      <div class="meal-info">
+        <div class="meal-name">${MEAL_LABEL[m]}${suffix}</div>
+        <div class="meal-status ${st}">${fromTpl&&st!=='off'?'<span class="tpl-dot"></span>':''}${statusText}</div>
+        ${mLocked?`<div class="lock-badge"><i class="ti ti-lock" style="font-size:10px"></i> Cerrado</div>`:''}
+      </div>
+      ${!mLocked?'<i class="ti ti-chevron-right meal-chevron"></i>':''}
     </div>`;
   });
+
+  return `
+    <div class="meal-card">${rows}</div>
+    <div class="note-card">
+      <i class="ti ti-pencil" style="font-size:15px;color:#ccc"></i>
+      <input type="text" placeholder="Nota del día (dieta blanda, sin ají…)"
+        value="${note.replace(/"/g,'&quot;')}"
+        ${locked?'disabled':''}
+        onchange="setDayNote('${dk}',this.value)"/>
+    </div>`;
+}
+
+function fmtTime12(t){
+  if(!t || !/^\d{1,2}:\d{2}$/.test(t)) return t||'';
+  let [h,m]=t.split(':').map(Number);
+  const ap = h>=12 ? 'p.m.' : 'a.m.';
+  h = h%12; if(h===0) h=12;
+  return h+':'+String(m).padStart(2,'0')+' '+ap;
+}
+
+/* ════════ SWIPE GESTURE ════════ */
+let touchStartX=0, touchDeltaX=0, touchActive=false;
+function attachSwipe(){
+  const el=document.getElementById('day-carousel');
+  if(!el) return;
+  el.addEventListener('touchstart', e=>{
+    touchStartX=e.touches[0].clientX; touchActive=true; touchDeltaX=0;
+  }, {passive:true});
+  el.addEventListener('touchmove', e=>{
+    if(!touchActive) return;
+    touchDeltaX = e.touches[0].clientX - touchStartX;
+    const track=document.getElementById('day-track');
+    if(track){
+      const base = -currentDayIdx*100;
+      const pct = (touchDeltaX / el.clientWidth) * 100;
+      track.style.transition='none';
+      track.style.transform=`translateX(${base+pct}%)`;
+    }
+  }, {passive:true});
+  el.addEventListener('touchend', ()=>{
+    touchActive=false;
+    const track=document.getElementById('day-track');
+    if(track) track.style.transition='';
+    if(Math.abs(touchDeltaX) > 60){
+      if(touchDeltaX < 0 && currentDayIdx < 6) goToDay(currentDayIdx+1);
+      else if(touchDeltaX > 0 && currentDayIdx > 0) goToDay(currentDayIdx-1);
+      else goToDay(currentDayIdx);
+    } else {
+      if(track) track.style.transform=`translateX(-${currentDayIdx*100}%)`;
+    }
+    touchDeltaX=0;
+  });
+}
+
+/* ════════ BOTTOM SHEET — selector de comida ════════ */
+let sheetCtx=null;
+
+function openMealSheet(storeDk, meal, dayIdx, fromTpl){
+  const s=gl();
+  const dayObj=new Date(storeDk+'T12:00:00');
+  let cur;
+  if(s.bookings[storeDk]&&s.bookings[storeDk][meal]&&s.bookings[storeDk][meal].state!==undefined){
+    cur=s.bookings[storeDk][meal];
+  } else if(fromTpl){
+    cur=getTplState(s,dayObj,meal)||{state:'off',time:getDefaultTime(dayObj,meal,'off')};
+  } else {
+    cur={state:'off',time:getDefaultTime(dayObj,meal,'off')};
+  }
+  sheetCtx={storeDk, meal, dayObj, state:cur.state||'off', time:cur.time||getDefaultTime(dayObj,meal,cur.state)};
+  renderSheet();
+}
+
+function renderSheet(){
+  let overlay=document.getElementById('meal-sheet-overlay');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='meal-sheet-overlay';
+    overlay.className='sheet-overlay';
+    document.body.appendChild(overlay);
+  }
+  const {meal,state,time}=sheetCtx;
+  const days=get7Days();
+  const dayLabel = fmtDate(sheetCtx.dayObj);
+
+  let opts='';
+  STATES.forEach(st=>{
+    opts+=`<div class="sheet-opt ${state===st?'sel':''}" onclick="selectSheetState('${st}')">
+      <span class="sheet-opt-label">${STATE_LABEL[st]}</span>
+      ${state===st?'<i class="ti ti-check" style="color:#0F6E56"></i>':''}
+    </div>`;
+  });
+
+  overlay.innerHTML=`
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">${MEAL_ICON[meal]} ${MEAL_LABEL[meal]}</div>
+      <div class="sheet-subtitle">${dayLabel}</div>
+      <div class="sheet-opts">${opts}</div>
+      ${state!=='off'?`<div class="sheet-time-row">
+        <label>Hora</label>
+        <input type="time" id="sheet-time-input" value="${time}" onchange="updateSheetTime(this.value)"/>
+      </div>`:''}
+      <button class="sheet-close" onclick="closeSheet()">Cerrar</button>
+    </div>`;
+  requestAnimationFrame(()=>overlay.classList.add('show'));
+  overlay.onclick=(e)=>{ if(e.target===overlay) closeSheet(); };
+}
+
+function selectSheetState(st){
+  sheetCtx.state=st;
+  if(st!=='off'){
+    sheetCtx.time=getDefaultTime(sheetCtx.dayObj, sheetCtx.meal, st);
+  }
+  commitSheet();
+  renderSheet();
+}
+
+function updateSheetTime(val){
+  sheetCtx.time=val;
+  commitSheet();
+}
+
+function commitSheet(){
+  const s=gl();
+  const {storeDk,meal,state,time}=sheetCtx;
+  if(!s.bookings[storeDk]) s.bookings[storeDk]={};
+  s.bookings[storeDk][meal]={state, time};
+  sl(s);
+  const nota=(s.dayNotes&&s.dayNotes[storeDk])||'';
+  schedSave(s.userName, storeDk, meal, state, time, nota);
+}
+
+function closeSheet(){
+  const overlay=document.getElementById('meal-sheet-overlay');
+  if(overlay){
+    overlay.classList.remove('show');
+    setTimeout(()=>{ overlay.remove(); render(); }, 200);
+  }
+}
+
+function setDayNote(dk,val){
+  const s=gl();
+  if(!s.dayNotes) s.dayNotes={};
+  s.dayNotes[dk]=val; sl(s);
+  MEALS_USER.forEach(m=>{
+    const info=(s.bookings[dk]&&s.bookings[dk][m])||{state:'off',time:''};
+    schedSave(s.userName,dk,m,info.state,info.time||'',val);
+  });
+}
+
+/* ════════ SEMANA TIPO ════════ */
+const DOW_ORDER = [1,2,3,4,5,6,0];
+const DOW_LABEL = {0:'domingo',1:'lunes',2:'martes',3:'miércoles',4:'jueves',5:'viernes',6:'sábado'};
+
+function renderSemanaTipo(s){
+  let html=`<p class="tpl-intro">Configura tu patrón habitual de comidas. Se usará como punto de partida cada semana — lo verás marcado con un puntito hasta que lo confirmes o cambies para un día concreto.</p>`;
+  DOW_ORDER.forEach(dow=>{
+    const tpl=(s.weekTemplate&&s.weekTemplate[dow])||{};
+    html+=`<div class="tpl-day-card">
+      <div class="tpl-day-header">${DOW_LABEL[dow].charAt(0).toUpperCase()+DOW_LABEL[dow].slice(1)}</div>`;
+    MEALS_USER.forEach(m=>{
+      const info=tpl[m]||{state:'off'};
+      const st=info.state||'off';
+      const refDay=nextOccurrence(dow);
+      const dayForTime = m==='desayuno' ? (()=>{ const n=new Date(refDay); n.setDate(n.getDate()+1); return n; })() : refDay;
+      const t=info.time||getDefaultTime(dayForTime,m,st);
+      const suffix = m==='desayuno' ? ` <small style="color:#aaa;font-weight:500">(día siguiente)</small>` : '';
+      const statusText = st==='off' ? 'No come' : (STATE_LABEL[st]+' · '+fmtTime12(t));
+      html+=`<div class="meal-row-app" onclick="openTplSheet(${dow},'${m}')">
+        <div class="meal-icon-box ${m}">${MEAL_ICON[m]}</div>
+        <div class="meal-info">
+          <div class="meal-name">${MEAL_LABEL[m]}${suffix}</div>
+          <div class="meal-status ${st}">${statusText}</div>
+        </div>
+        <i class="ti ti-chevron-right meal-chevron"></i>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`<button class="add-btn" onclick="clearTpl()"><i class="ti ti-trash"></i> Borrar toda mi semana tipo</button>`;
   return html;
 }
 
-/* ── Admin ── */
+let tplSheetCtx=null;
+function openTplSheet(dow, meal){
+  const s=gl();
+  const tpl=(s.weekTemplate&&s.weekTemplate[dow])||{};
+  const info=tpl[meal]||{state:'off'};
+  const refDay=nextOccurrence(dow);
+  const dayForTime = meal==='desayuno' ? (()=>{ const n=new Date(refDay); n.setDate(n.getDate()+1); return n; })() : refDay;
+  tplSheetCtx={dow, meal, dayForTime, state:info.state||'off', time:info.time||getDefaultTime(dayForTime,meal,info.state||'off')};
+  renderTplSheet();
+}
+
+function renderTplSheet(){
+  let overlay=document.getElementById('meal-sheet-overlay');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='meal-sheet-overlay';
+    overlay.className='sheet-overlay';
+    document.body.appendChild(overlay);
+  }
+  const {dow,meal,state,time}=tplSheetCtx;
+  let opts='';
+  STATES.forEach(st=>{
+    opts+=`<div class="sheet-opt ${state===st?'sel':''}" onclick="selectTplSheetState('${st}')">
+      <span class="sheet-opt-label">${STATE_LABEL[st]}</span>
+      ${state===st?'<i class="ti ti-check" style="color:#0F6E56"></i>':''}
+    </div>`;
+  });
+  overlay.innerHTML=`
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">${MEAL_ICON[meal]} ${MEAL_LABEL[meal]}</div>
+      <div class="sheet-subtitle">${DOW_LABEL[dow].charAt(0).toUpperCase()+DOW_LABEL[dow].slice(1)} · semana tipo</div>
+      <div class="sheet-opts">${opts}</div>
+      ${state!=='off'?`<div class="sheet-time-row">
+        <label>Hora</label>
+        <input type="time" id="sheet-time-input" value="${time}" onchange="updateTplSheetTime(this.value)"/>
+      </div>`:''}
+      <button class="sheet-close" onclick="closeSheet()">Cerrar</button>
+    </div>`;
+  requestAnimationFrame(()=>overlay.classList.add('show'));
+  overlay.onclick=(e)=>{ if(e.target===overlay) closeSheet(); };
+}
+
+function selectTplSheetState(st){
+  tplSheetCtx.state=st;
+  if(st!=='off') tplSheetCtx.time=getDefaultTime(tplSheetCtx.dayForTime, tplSheetCtx.meal, st);
+  commitTplSheet();
+  renderTplSheet();
+}
+function updateTplSheetTime(val){ tplSheetCtx.time=val; commitTplSheet(); }
+function commitTplSheet(){
+  const s=gl();
+  const {dow,meal,state,time}=tplSheetCtx;
+  if(!s.weekTemplate) s.weekTemplate={};
+  if(!s.weekTemplate[dow]) s.weekTemplate[dow]={};
+  s.weekTemplate[dow][meal]={state,time};
+  sl(s);
+}
+function clearTpl(){
+  if(!confirm('¿Borrar toda tu semana tipo? Esto no afecta lo que ya tienes guardado en días concretos.')) return;
+  const s=gl();
+  s.weekTemplate={};
+  sl(s); render();
+}
+
+/* ════════ INVITADOS ════════ */
+function renderInvitados(s){
+  let html=`<div class="guests-mgr">
+    <h4><i class="ti ti-user-plus"></i> Gestionar invitados</h4>`;
+  (s.guests||[]).forEach(g=>{
+    html+=`<div class="guest-row-item">
+      <input type="text" value="${g.name.replace(/"/g,'&quot;')}" onchange="renameGuest('${g.id}',this.value)" placeholder="Nombre del invitado"/>
+      <button class="del-btn" onclick="deleteGuest('${g.id}')"><i class="ti ti-x" style="font-size:14px"></i></button>
+    </div>`;
+  });
+  html+=`<button class="add-btn" onclick="addGuest()"><i class="ti ti-plus"></i> Añadir invitado</button></div>`;
+
+  if((s.guests||[]).length>0){
+    html+=`<div class="section-title">Comidas de invitados por día</div>`;
+    const days=get7Days();
+    days.forEach((day,idx)=>{
+      const dk=dayKey(day);
+      const locked=isLocked(day);
+      html+=`<div class="meal-card">
+        <div class="tpl-day-header">${idx===0?'Hoy · ':''}${fmtDate(day)} ${locked?'<span style="color:#A32D2D;font-size:11px;font-weight:600;float:right"><i class="ti ti-lock" style="font-size:11px"></i> Cerrado</span>':''}</div>`;
+      s.guests.forEach(g=>{
+        const gb=(s.guestBookings[dk]||{})[g.id]||{};
+        html+=`<div class="guest-name-label">${g.name}</div>`;
+        MEALS_USER.forEach(m=>{
+          const info=gb[m]||{state:'off'};
+          const st=info.state||'off';
+          const t=info.time||getDefaultTime(day,m,st);
+          const statusText = st==='off' ? 'No come' : (STATE_LABEL[st]+' · '+fmtTime12(t));
+          html+=`<div class="meal-row-app ${locked?'locked':''}" ${!locked?`onclick="openGuestSheet('${dk}','${g.id}','${m}')"`:''}>
+            <div class="meal-icon-box ${m}">${MEAL_ICON[m]}</div>
+            <div class="meal-info">
+              <div class="meal-name">${MEAL_LABEL[m]}</div>
+              <div class="meal-status ${st}">${statusText}</div>
+            </div>
+            ${!locked?'<i class="ti ti-chevron-right meal-chevron"></i>':''}
+          </div>`;
+        });
+      });
+      html+=`</div>`;
+    });
+  }
+  return html;
+}
+
+function addGuest(){
+  const s=gl(); if(!s.guests) s.guests=[];
+  s.guests.push({id:'g'+Date.now(),name:'Invitado'});
+  sl(s); render();
+}
+function renameGuest(gid,name){
+  const s=gl(); const g=(s.guests||[]).find(x=>x.id===gid);
+  if(g){ g.name=name; sl(s); }
+}
+function deleteGuest(gid){
+  const s=gl(); s.guests=(s.guests||[]).filter(g=>g.id!==gid);
+  sl(s); render();
+}
+
+let guestSheetCtx=null;
+function openGuestSheet(dk,gid,meal){
+  const s=gl();
+  const gb=(s.guestBookings[dk]||{})[gid]||{};
+  const info=gb[meal]||{state:'off'};
+  const dayObj=new Date(dk+'T12:00:00');
+  guestSheetCtx={dk,gid,meal,dayObj,state:info.state||'off',time:info.time||getDefaultTime(dayObj,meal,info.state||'off')};
+  renderGuestSheet();
+}
+function renderGuestSheet(){
+  let overlay=document.getElementById('meal-sheet-overlay');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='meal-sheet-overlay';
+    overlay.className='sheet-overlay';
+    document.body.appendChild(overlay);
+  }
+  const {meal,state,time}=guestSheetCtx;
+  const s=gl();
+  const g=(s.guests||[]).find(x=>x.id===guestSheetCtx.gid);
+  let opts='';
+  STATES.forEach(st=>{
+    opts+=`<div class="sheet-opt ${state===st?'sel':''}" onclick="selectGuestSheetState('${st}')">
+      <span class="sheet-opt-label">${STATE_LABEL[st]}</span>
+      ${state===st?'<i class="ti ti-check" style="color:#0F6E56"></i>':''}
+    </div>`;
+  });
+  overlay.innerHTML=`
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">${MEAL_ICON[meal]} ${MEAL_LABEL[meal]}</div>
+      <div class="sheet-subtitle">${g?g.name:'Invitado'} · ${fmtDate(guestSheetCtx.dayObj)}</div>
+      <div class="sheet-opts">${opts}</div>
+      ${state!=='off'?`<div class="sheet-time-row">
+        <label>Hora</label>
+        <input type="time" id="sheet-time-input" value="${time}" onchange="updateGuestSheetTime(this.value)"/>
+      </div>`:''}
+      <button class="sheet-close" onclick="closeSheet()">Cerrar</button>
+    </div>`;
+  requestAnimationFrame(()=>overlay.classList.add('show'));
+  overlay.onclick=(e)=>{ if(e.target===overlay) closeSheet(); };
+}
+function selectGuestSheetState(st){
+  guestSheetCtx.state=st;
+  if(st!=='off') guestSheetCtx.time=getDefaultTime(guestSheetCtx.dayObj, guestSheetCtx.meal, st);
+  commitGuestSheet();
+  renderGuestSheet();
+}
+function updateGuestSheetTime(val){ guestSheetCtx.time=val; commitGuestSheet(); }
+function commitGuestSheet(){
+  const s=gl();
+  const {dk,gid,meal,state,time}=guestSheetCtx;
+  if(!s.guestBookings[dk]) s.guestBookings[dk]={};
+  if(!s.guestBookings[dk][gid]) s.guestBookings[dk][gid]={};
+  s.guestBookings[dk][gid][meal]={state,time};
+  sl(s);
+  const g=(s.guests||[]).find(x=>x.id===gid);
+  const gName=(g?g.name:gid)+' (inv.)';
+  schedSave(gName, dk, meal, state, time, '');
+}
+
+/* ════════ ADMINISTRACIÓN ════════ */
 function getAllForDay(s,dk,dayObj){
   const result=[];
-  // Usar SOLO datos remotos para que todos vean a todos
-  // El usuario propio: si ya sincronizó, está en remoteData; si no, usar local como fallback
   const allUsers=new Set(Object.keys(remoteData));
-  allUsers.add(s.userName); // garantizar que el propio aparece siempre
+  if(s.userName) allUsers.add(s.userName);
   allUsers.forEach(usuario=>{
-    // Para el usuario actual: preferir remoteData (lo que el Sheet tiene),
-    // pero si no existe aún en remote, usar local como fallback
     const remoteDay=(remoteData[usuario]&&remoteData[usuario][dk])||null;
     const localDay=(usuario===s.userName)?(s.bookings[dk]||{}):null;
     const dayData=remoteDay||localDay||{};
@@ -541,12 +1020,9 @@ function getAllForDay(s,dk,dayObj){
     MEALS_ADMIN.forEach(m=>{ entry[m]=dayData[m]||{state:'off'}; });
     result.push(entry);
   });
-  // Invitados: están guardados en el Sheet con nombre "X (inv.)"
-  // También los mostramos desde remoteData automáticamente arriba.
-  // Los invitados locales aún no sincronizados:
   (s.guests||[]).forEach(g=>{
     const gKey=g.name+' (inv.)';
-    if(allUsers.has(gKey)) return; // ya incluido desde remoteData
+    if(allUsers.has(gKey)) return;
     const gb=(s.guestBookings[dk]||{})[g.id]||{};
     const ge={name:g.name+' (inv.)',isGuest:true};
     MEALS_ADMIN.forEach(m=>{ ge[m]=gb[m]||{state:'off'}; });
@@ -555,100 +1031,16 @@ function getAllForDay(s,dk,dayObj){
   return result;
 }
 
-/* ── Mi semana tipo ── */
-const DOW_ORDER = [1,2,3,4,5,6,0]; // lunes..domingo
-const DOW_LABEL = {0:'domingo',1:'lunes',2:'martes',3:'miércoles',4:'jueves',5:'viernes',6:'sábado'};
-
-function renderSemanaTipo(s){
-  let html=`<p class="tpl-intro">Configura aquí tu patrón habitual de comidas. Estos valores se usarán como punto de partida cada semana en "Mi vista" — los verás con borde punteado hasta que los confirmes o cambies para un día concreto.</p>`;
-
-  DOW_ORDER.forEach(dow=>{
-    const tpl=(s.weekTemplate&&s.weekTemplate[dow])||{};
-    html+=`<div class="tpl-day-card">
-      <div class="tpl-day-header">${DOW_LABEL[dow].charAt(0).toUpperCase()+DOW_LABEL[dow].slice(1)}</div>
-      <div class="col-headers">
-        <div class="col-hdr">${MEAL_ICON.almuerzo} Almuerzo</div>
-        <div class="col-hdr">${MEAL_ICON.cena} Cena</div>
-        <div class="col-hdr">${MEAL_ICON.desayuno} Desayuno <span style="font-size:9px;color:#bbb;display:block;font-weight:400">(día siguiente)</span></div>
-      </div>
-      <div class="meal-row">`;
-    MEALS_USER.forEach(m=>{
-      const info=tpl[m]||{state:'off'};
-      const st=info.state||'off';
-      // El desayuno de esta tarjeta se come al día SIGUIENTE, así que su hora
-      // por defecto debe calcularse con ese día siguiente (p.ej. viernes -> sábado)
-      const refDay=nextOccurrence(dow);
-      const dayForTime = m==='desayuno' ? (()=>{ const n=new Date(refDay); n.setDate(n.getDate()+1); return n; })() : refDay;
-      const t=info.time||getDefaultTime(dayForTime,m,st);
-      html+=`<div class="meal-cell">
-        <button class="state-btn ${st}" onclick="cycleTplState(${dow},'${m}')">${st==='off'?'<i class="ti ti-x" style="opacity:0.3"></i>':STATE_LABEL[st]}</button>
-        ${st!=='off'?`<div class="time-wrap"><input class="time-input" type="time" value="${t}" onchange="setTplTime(${dow},'${m}',this.value)"/></div>`:''}
-      </div>`;
-    });
-    html+=`</div></div>`;
-  });
-
-  html+=`<button class="add-btn" style="margin-top:0.25rem" onclick="clearTpl()"><i class="ti ti-trash"></i> Borrar toda mi semana tipo</button>`;
-  return html;
-}
-
-function nextOccurrence(dow){
-  const d=new Date();
-  const diff=(dow - d.getDay() + 7) % 7;
-  d.setDate(d.getDate()+diff);
-  return d;
-}
-
-function cycleTplState(dow,meal){
-  const s=gl();
-  if(!s.weekTemplate) s.weekTemplate={};
-  if(!s.weekTemplate[dow]) s.weekTemplate[dow]={};
-  const cur=(s.weekTemplate[dow][meal]&&s.weekTemplate[dow][meal].state)||'off';
-  const next=nextState(cur);
-  const refDay=nextOccurrence(dow);
-  const dayForTime = meal==='desayuno' ? (()=>{ const n=new Date(refDay); n.setDate(n.getDate()+1); return n; })() : refDay;
-  const t=getDefaultTime(dayForTime,meal,next);
-  s.weekTemplate[dow][meal]={state:next,time:t};
-  sl(s); render();
-}
-
-function setTplTime(dow,meal,val){
-  const s=gl();
-  if(!s.weekTemplate) s.weekTemplate={};
-  if(!s.weekTemplate[dow]) s.weekTemplate[dow]={};
-  if(!s.weekTemplate[dow][meal]) s.weekTemplate[dow][meal]={state:'on'};
-  s.weekTemplate[dow][meal].time=val;
-  sl(s);
-}
-
-function clearTpl(){
-  if(!confirm('¿Borrar toda tu semana tipo? Esto no afecta lo que ya tienes guardado en días concretos.')) return;
-  const s=gl();
-  s.weekTemplate={};
-  sl(s); render();
-}
-
 function renderAdmin(s){
   const days=get7Days();
   let html=`<div class="section-title">Resumen para la administración</div>`;
   days.forEach((day,idx)=>{
     const dk=dayKey(day);
-
-    // Para el desayuno tomamos el día SIGUIENTE
-    const nextDay=new Date(day); nextDay.setDate(day.getDate()+1);
-    const dkNext=dayKey(nextDay);
-    const nextDayLabel=DAYS_ES[nextDay.getDay()];
-
-    // Entradas para almuerzo+cena = día actual; desayuno = día siguiente
-    const entriesHoy=getAllForDay(s,dk,day);
-    const entriesMañana=getAllForDay(s,dkNext,nextDay);
-
+    const entries=getAllForDay(s,dk,day);
     const counts={almuerzo:{on:0,early:0,late:0},cena:{on:0,early:0,late:0},desayuno:{on:0,early:0,late:0}};
     const names={almuerzo:[],cena:[],desayuno:[]};
-
-    // Almuerzo y cena del día actual
-    entriesHoy.forEach(e=>{
-      ['almuerzo','cena'].forEach(m=>{
+    entries.forEach(e=>{
+      MEALS_ADMIN.forEach(m=>{
         const st=(e[m]&&e[m].state)||'off';
         if(st!=='off'){
           counts[m][st]=(counts[m][st]||0)+1;
@@ -658,28 +1050,18 @@ function renderAdmin(s){
         }
       });
     });
-
-    // Desayuno del día SIGUIENTE
-    entriesMañana.forEach(e=>{
-      const st=(e['desayuno']&&e['desayuno'].state)||'off';
-      if(st!=='off'){
-        counts['desayuno'][st]=(counts['desayuno'][st]||0)+1;
-        const t=e['desayuno'].time||getDefaultTime(nextDay,'desayuno',st);
-        const extra=st!=='on'?` (${st==='early'?'temp.':'tarde'} ${t})`:'';
-        names['desayuno'].push({label:e.name+extra, name:e.name});
-      }
-    });
-
     const totalFor=m=>counts[m].on+counts[m].early+counts[m].late;
     const total=totalFor('almuerzo')+totalFor('cena')+totalFor('desayuno');
-    const note=(s.dayNotes&&s.dayNotes[dk])||'';
 
-    html+=`<div class="admin-card">
-      <div class="admin-hdr">
-        <span>${idx===0?'<span style="color:#0F6E56">Hoy</span> — ':''}${fmtDate(day)}</span>
-        <span style="font-size:12px;color:#999">${total} asistencia${total!==1?'s':''}</span>
+    const nextDay=new Date(day); nextDay.setDate(day.getDate()+1);
+    const nextDayLabel=DAYS_ES[nextDay.getDay()];
+
+    html+=`<div class="admin-summary-card">
+      <div class="admin-summary-hdr">
+        <span class="admin-summary-title">${idx===0?'Hoy · ':''}${fmtDate(day)}</span>
+        <span class="admin-summary-count">${total} asist.</span>
       </div>
-      <div class="admin-counts">`;
+      <div class="admin-counts-row">`;
     MEALS_ADMIN.forEach(m=>{
       const ton=counts[m].on, tep=counts[m].early, trd=counts[m].late;
       const ttl=totalFor(m);
@@ -687,13 +1069,12 @@ function renderAdmin(s){
       if(tep>0) numHtml+=`<span class="ac-badge early">+${tep}&#x2B06;</span>`;
       if(trd>0) numHtml+=`<span class="ac-badge late">+${trd}&#x2B07;</span>`;
       html+=`<div class="ac">
-        <div class="ac-label">${MEAL_ICON[m]} ${m}</div>
+        <div class="ac-label">${MEAL_LABEL[m]}</div>
         <div class="ac-num-wrap">${numHtml}</div>
       </div>`;
     });
     html+=`</div>`;
 
-    // resumen textual: Almuerzan / Cenan / Desayunan
     const verbos = {almuerzo:'Almuerzan', cena:'Cenan', desayuno:`Desayunan (${nextDayLabel})`};
     MEALS_ADMIN.forEach(m=>{
       if(names[m].length){
@@ -708,10 +1089,9 @@ function renderAdmin(s){
       }
     });
 
-    // Notas con autor: recoger nota de cada usuario del remoteData + local
     const notasConAutor=[];
     const allUsersForNotes=new Set(Object.keys(remoteData));
-    allUsersForNotes.add(s.userName);
+    if(s.userName) allUsersForNotes.add(s.userName);
     allUsersForNotes.forEach(usuario=>{
       const uDay=(usuario===s.userName)
         ? {nota:(s.dayNotes&&s.dayNotes[dk])||''}
@@ -727,152 +1107,10 @@ function renderAdmin(s){
   return html;
 }
 
-/* ── Invitados ── */
-function renderInvitados(s){
-  const days=get7Days();
-  let html=`<div class="guests-mgr">
-    <h4><i class="ti ti-user-plus"></i> Gestionar invitados</h4>`;
-  (s.guests||[]).forEach(g=>{
-    html+=`<div class="guest-row-item">
-      <input type="text" value="${g.name.replace(/"/g,'&quot;')}" onchange="renameGuest('${g.id}',this.value)" placeholder="Nombre del invitado"/>
-      <button class="del-btn" onclick="deleteGuest('${g.id}')"><i class="ti ti-x" style="font-size:14px"></i></button>
-    </div>`;
-  });
-  html+=`<button class="add-btn" onclick="addGuest()"><i class="ti ti-plus"></i> Añadir invitado</button></div>`;
-
-  if((s.guests||[]).length>0){
-    html+=`<div class="section-title">Comidas de invitados por día</div>`;
-    days.forEach((day,idx)=>{
-      const dk=dayKey(day);
-      const locked=isLocked(day);
-      html+=`<div class="day-card">
-        <div class="day-header">
-          <div class="day-label">${idx===0?'<span style="color:#0F6E56">Hoy</span> — ':''}${fmtDate(day)}</div>
-          ${locked?'<span style="font-size:11px;color:#A32D2D"><i class="ti ti-lock"></i> Cerrado</span>':''}
-        </div>
-        <div class="col-headers">
-          <div class="col-hdr">${MEAL_ICON.almuerzo} Almuerzo</div>
-          <div class="col-hdr">${MEAL_ICON.cena} Cena</div>
-          <div class="col-hdr">${MEAL_ICON.desayuno} Desayuno</div>
-        </div>`;
-      s.guests.forEach(g=>{
-        const gb=(s.guestBookings[dk]||{})[g.id]||{};
-        html+=`<div class="guest-name-label">${g.name}</div><div class="meal-row">`;
-        MEALS_USER.forEach(m=>{
-          const info=gb[m]||{state:'off'};
-          const st=info.state||'off';
-          const t=info.time||getDefaultTime(day,m,st);
-          html+=`<div class="meal-cell">
-            <button class="state-btn ${st}${locked?' locked-st':''}"
-              ${!locked?`onclick="cycleGuestMeal('${dk}','${g.id}','${m}')"`:''}>${st==='off'?'<i class="ti ti-x" style="opacity:0.3"></i>':STATE_LABEL[st]}</button>
-            ${st!=='off'&&!locked?`<div class="time-wrap"><input class="time-input" type="time" value="${t}" onchange="setGuestTime('${dk}','${g.id}','${m}',this.value)"/></div>`:''}
-            ${st!=='off'&&locked?`<div style="font-size:11px;color:#999;margin-top:2px">${t}</div>`:''}
-          </div>`;
-        });
-        html+=`</div>`;
-      });
-      html+=`</div>`;
-    });
-  }
-  return html;
-}
-
-/* ── actions ── */
-function cycleState(dk,meal,fromTpl){
-  const s=gl();
-  if(!s.bookings[dk]) s.bookings[dk]={};
-  let cur;
-  if(s.bookings[dk][meal]&&s.bookings[dk][meal].state!==undefined){
-    cur=s.bookings[dk][meal].state;
-  } else if(fromTpl){
-    // Partir del valor mostrado (de la plantilla) en vez de 'off'
-    const dayObjForTpl=new Date(dk+'T12:00:00');
-    const tplVal=getTplState(s, dayObjForTpl, meal);
-    cur = tplVal ? tplVal.state : 'off';
-  } else {
-    cur='off';
-  }
-  const next=nextState(cur);
-  const dayObj=new Date(dk+'T12:00:00');
-  const t=getDefaultTime(dayObj,meal,next);
-  s.bookings[dk][meal]={state:next,time:t};
-  sl(s); render();
-  const nota=(s.dayNotes&&s.dayNotes[dk])||'';
-  schedSave(s.userName,dk,meal,next,t,nota);
-}
-
-function setTime(dk,meal,val){
-  const s=gl();
-  if(!s.bookings[dk]) s.bookings[dk]={};
-  if(!s.bookings[dk][meal]) s.bookings[dk][meal]={state:'on'};
-  s.bookings[dk][meal].time=val;
-  sl(s);
-  const nota=(s.dayNotes&&s.dayNotes[dk])||'';
-  schedSave(s.userName,dk,meal,s.bookings[dk][meal].state,val,nota);
-}
-
-function setDayNote(dk,val){
-  const s=gl();
-  if(!s.dayNotes) s.dayNotes={};
-  s.dayNotes[dk]=val; sl(s);
-  MEALS_USER.forEach(m=>{
-    const info=(s.bookings[dk]&&s.bookings[dk][m])||{state:'off',time:''};
-    schedSave(s.userName,dk,m,info.state,info.time||'',val);
-  });
-}
-
-function cycleGuestMeal(dk,gid,meal){
-  const s=gl();
-  if(!s.guestBookings[dk]) s.guestBookings[dk]={};
-  if(!s.guestBookings[dk][gid]) s.guestBookings[dk][gid]={};
-  const cur=(s.guestBookings[dk][gid][meal]&&s.guestBookings[dk][gid][meal].state)||'off';
-  const next=nextState(cur);
-  const t=getDefaultTime(new Date(dk+'T12:00:00'),meal,next);
-  s.guestBookings[dk][gid][meal]={state:next,time:t};
-  sl(s); render();
-  const gName=(s.guests.find(g=>g.id===gid)||{}).name||gid;
-  schedSave(gName+' (inv.)',dk,meal,next,t,'');
-}
-
-function setGuestTime(dk,gid,meal,val){
-  const s=gl();
-  if(!s.guestBookings[dk]) s.guestBookings[dk]={};
-  if(!s.guestBookings[dk][gid]) s.guestBookings[dk][gid]={};
-  if(!s.guestBookings[dk][gid][meal]) s.guestBookings[dk][gid][meal]={state:'on'};
-  s.guestBookings[dk][gid][meal].time=val;
-  sl(s);
-  const gName=(s.guests.find(g=>g.id===gid)||{}).name||gid;
-  schedSave(gName+' (inv.)',dk,meal,s.guestBookings[dk][gid][meal].state,val,'');
-}
-
-function switchTab(t){ currentTab=t; render(); }
-
-function changeUser(){
-  const s=gl();
-  const n=prompt('Cambiar nombre:',s.userName);
-  if(n&&n.trim()){ s.userName=n.trim(); sl(s); loadRemote(); }
-}
-
-function addGuest(){
-  const s=gl(); if(!s.guests) s.guests=[];
-  s.guests.push({id:'g'+Date.now(),name:'Invitado'});
-  sl(s); render();
-}
-
-function renameGuest(gid,name){
-  const s=gl(); const g=(s.guests||[]).find(x=>x.id===gid);
-  if(g){ g.name=name; sl(s); }
-}
-
-function deleteGuest(gid){
-  const s=gl(); s.guests=(s.guests||[]).filter(g=>g.id!==gid);
-  sl(s); render();
-}
-
-/* ── init ── */
+/* ════════ INIT ════════ */
 const _s=gl();
-if(_s){ loadRemote(); } else { render(); }
-setInterval(()=>{ if(gl()) loadRemote(); }, 60000);
+if(_s && (_s.userName || _s.isAdmin) && !_s.pendingChoice){ loadRemote(); } else { render(); }
+setInterval(()=>{ const ss=gl(); if(ss && (ss.userName||ss.isAdmin) && !ss.pendingChoice) loadRemote(); }, 60000);
 </script>
 </body>
 </html>
