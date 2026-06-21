@@ -20,7 +20,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative}
 
 /* ── Header tipo app ── */
-.app-header{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;background:#fff;position:sticky;top:0;z-index:20;border-bottom:0.5px solid rgba(0,0,0,0.08)}
+.app-header{padding:calc(14px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;justify-content:space-between;background:#fff;position:sticky;top:0;z-index:20;border-bottom:0.5px solid rgba(0,0,0,0.08)}
 .app-title-wrap{display:flex;align-items:center;gap:10px}
 .app-icon{width:34px;height:34px;border-radius:10px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .app-title{font-size:17px;font-weight:700;color:#0F6E56;line-height:1.1}
@@ -38,7 +38,9 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .sync-refresh{background:none;border:none;color:#0F6E56;font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px}
 
 /* ── Content area ── */
-.content{flex:1;padding:14px 16px 90px;overflow-x:hidden}
+.content{flex:1;padding:14px 16px 90px;overflow-x:hidden;overflow-y:auto}
+.content.center-content{display:flex;flex-direction:column;justify-content:center}
+.content.center-content>*{width:100%}
 
 /* ── Day carousel (swipe) ── */
 .day-carousel{position:relative}
@@ -108,7 +110,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .sheet-close{margin-top:14px;width:100%;padding:13px;border-radius:14px;background:#f5f5f3;border:none;font-size:14px;font-weight:600;color:#666}
 
 /* ── Setup / welcome screen ── */
-.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem 1.5rem;gap:1.75rem;text-align:center}
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:calc(2rem + env(safe-area-inset-top)) 1.5rem calc(2rem + env(safe-area-inset-bottom));gap:1.75rem;text-align:center}
 .welcome-icon{width:84px;height:84px;border-radius:24px;background:#E1F5EE;display:flex;align-items:center;justify-content:center}
 .welcome-title{font-size:24px;font-weight:700;color:#0F6E56}
 .welcome-subtitle{font-size:13px;color:#999;margin-top:2px}
@@ -562,10 +564,10 @@ function renderApp(s){
   renderSyncBar();
 
   const content=document.getElementById('content');
-  if(s.isAdmin){ content.innerHTML=renderAdmin(s); }
-  else if(currentTab==='mi-vista'){ content.innerHTML=renderMiVistaCarousel(s); attachSwipe(); }
-  else if(currentTab==='semana-tipo'){ content.innerHTML=renderSemanaTipo(s); }
-  else { content.innerHTML=renderInvitados(s); }
+  if(s.isAdmin){ content.classList.remove('center-content'); content.innerHTML=renderAdmin(s); }
+  else if(currentTab==='mi-vista'){ content.classList.add('center-content'); content.innerHTML=renderMiVistaCarousel(s); attachSwipe(); }
+  else if(currentTab==='semana-tipo'){ content.classList.remove('center-content'); content.innerHTML=renderSemanaTipo(s); }
+  else { content.classList.remove('center-content'); content.innerHTML=renderInvitados(s); }
 }
 
 function switchTab(t){ currentTab=t; render(); }
