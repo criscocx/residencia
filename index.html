@@ -2,11 +2,17 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ComiditApp"/>
+<meta name="mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#0F6E56"/>
 <title>ComiditApp</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png"/>
+<link rel="apple-touch-icon" href="icons/icon-180.png"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -54,9 +60,9 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .meal-row-app:active{background:#fafaf8}
 .meal-row-app+.meal-row-app{border-top:0.5px solid rgba(0,0,0,0.06)}
 .meal-icon-box{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.meal-icon-box.almuerzo{background:#E1F5EE}
-.meal-icon-box.cena{background:#FAEEDA}
-.meal-icon-box.desayuno{background:#E8F0FB}
+.meal-icon-box.almuerzo{background:#E1F5EE;color:#0F6E56}
+.meal-icon-box.cena{background:#E8E0FB;color:#5B3FA0}
+.meal-icon-box.desayuno{background:#FAEEDA;color:#BA7517}
 .meal-info{flex:1;min-width:0}
 .meal-name{font-size:15px;font-weight:700;line-height:1.2}
 .meal-name small{font-size:11px;color:#aaa;font-weight:500}
@@ -124,20 +130,21 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .admin-summary-hdr{padding:12px 14px;border-bottom:0.5px solid rgba(0,0,0,0.07);display:flex;justify-content:space-between;align-items:center}
 .admin-summary-title{font-size:14px;font-weight:700}
 .admin-summary-count{font-size:11px;color:#999;font-weight:600}
-.admin-counts-row{display:grid;grid-template-columns:1fr 1fr 1fr}
-.ac{padding:12px 6px;text-align:center;border-right:0.5px solid rgba(0,0,0,0.06)}
+.admin-counts-row{display:grid;grid-template-columns:1fr 1fr 1fr;padding-bottom:4px}
+.ac{padding:13px 6px 8px;text-align:center;border-right:0.5px solid rgba(0,0,0,0.06)}
 .ac:last-child{border-right:none}
-.ac-label{font-size:10px;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:4px}
-.ac-num-wrap{display:flex;align-items:baseline;justify-content:center;gap:3px;flex-wrap:wrap;min-height:32px}
-.ac-num-main{font-size:23px;font-weight:700;color:#0F6E56;line-height:1}
-.ac-num-main.zero{color:#ccc;font-size:19px}
+.ac-label{font-size:10px;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:5px}
+.ac-num-wrap{display:flex;align-items:baseline;justify-content:center;gap:3px;flex-wrap:wrap;min-height:34px}
+.ac-num-main{font-size:27px;font-weight:800;color:#0F6E56;line-height:1;letter-spacing:-0.02em}
+.ac-num-main.zero{color:#ccc;font-size:19px;font-weight:700}
 .ac-badge{font-size:10px;font-weight:700;padding:2px 5px;border-radius:7px;line-height:1.4;white-space:nowrap}
 .ac-badge.early{background:#EAF3DE;color:#3B6D11;border:1px solid #639922}
 .ac-badge.late{background:#FAEEDA;color:#854F0B;border:1px solid #BA7517}
-.admin-meal-line{padding:5px 14px 7px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;border-top:0.5px solid rgba(0,0,0,0.05)}
-.admin-meal-verb{font-size:11px;font-weight:700;color:#444;white-space:nowrap;flex-shrink:0}
+.admin-meal-line{padding:6px 14px 8px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;border-top:0.5px solid rgba(0,0,0,0.05);background:#FAFAF8}
+.admin-meal-verb{font-size:10px;font-weight:700;color:#999;white-space:nowrap;flex-shrink:0;text-transform:uppercase;letter-spacing:0.02em}
 .admin-meal-tags{display:flex;flex-wrap:wrap;gap:4px}
-.ntag{padding:2px 8px;border-radius:9px;font-size:10px;font-weight:600}
+.ntag{padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600;background:#fff!important;border:1px solid rgba(0,0,0,0.1)!important;color:#555!important}
+.ntag .ntag-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:middle}
 .day-note-admin{font-size:11px;color:#854F0B;background:#FAEEDA;padding:7px 14px;display:flex;gap:6px;align-items:center;border-top:0.5px solid rgba(0,0,0,0.05)}
 
 /* ── Semana tipo / Invitados (reuse card style) ── */
@@ -425,13 +432,13 @@ function renderWelcome(s){
   if(s && s.askingName){
     document.getElementById('root').innerHTML=`
       <div class="welcome">
-        <div class="welcome-icon"><i class="ti ti-tools-kitchen-2" style="font-size:38px;color:#0F6E56"></i></div>
+        <div class="welcome-icon"><img src="icons/icon-192.png" alt="ComiditApp" style="width:56px;height:56px;border-radius:14px"/></div>
         <div>
-          <div class="welcome-title">ComiditApp</div>
-          <div class="welcome-subtitle">¿Cómo te llamas?</div>
+          <div class="welcome-title" style="color:var(--color-text-primary,#1a1a1a)">Comidit<span style="color:#0F6E56">App</span></div>
+          <div class="welcome-subtitle">¿Cuáles son tus iniciales?</div>
         </div>
         <div class="name-input-wrap">
-          <input id="sname" type="text" placeholder="Tus iniciales o nombre" maxlength="30" autocomplete="off"/>
+          <input id="sname" type="text" placeholder="Ej. CRB" maxlength="10" autocomplete="off" style="text-transform:uppercase"/>
           <button class="welcome-btn primary" onclick="doSetup()"><i class="ti ti-check"></i> Listo</button>
         </div>
       </div>`;
@@ -442,9 +449,9 @@ function renderWelcome(s){
   if(savedName){
     document.getElementById('root').innerHTML=`
       <div class="welcome">
-        <div class="welcome-icon"><i class="ti ti-tools-kitchen-2" style="font-size:38px;color:#0F6E56"></i></div>
+        <div class="welcome-icon"><img src="icons/icon-192.png" alt="ComiditApp" style="width:56px;height:56px;border-radius:14px"/></div>
         <div>
-          <div class="welcome-title">ComiditApp</div>
+          <div class="welcome-title" style="color:var(--color-text-primary,#1a1a1a)">Comidit<span style="color:#0F6E56">App</span></div>
           <div class="welcome-subtitle">A la Mesa · Residencia</div>
         </div>
         <div class="welcome-actions">
@@ -463,9 +470,9 @@ function renderWelcome(s){
 
   document.getElementById('root').innerHTML=`
     <div class="welcome">
-      <div class="welcome-icon"><i class="ti ti-tools-kitchen-2" style="font-size:38px;color:#0F6E56"></i></div>
+      <div class="welcome-icon"><img src="icons/icon-192.png" alt="ComiditApp" style="width:56px;height:56px;border-radius:14px"/></div>
       <div>
-        <div class="welcome-title">ComiditApp</div>
+        <div class="welcome-title" style="color:var(--color-text-primary,#1a1a1a)">Comidit<span style="color:#0F6E56">App</span></div>
         <div class="welcome-subtitle">A la Mesa · Residencia</div>
       </div>
       <div class="welcome-actions">
@@ -483,12 +490,12 @@ function askName(){
 }
 
 function doSetup(){
-  const n=(document.getElementById('sname')||{}).value||'';
-  if(!n.trim()) return;
+  const n=((document.getElementById('sname')||{}).value||'').trim().toUpperCase();
+  if(!n) return;
   let s=gl();
-  if(!s) s=initS(n.trim());
-  s.userName=n.trim();
-  s.savedUserName=n.trim();
+  if(!s) s=initS(n);
+  s.userName=n;
+  s.savedUserName=n;
   s.isAdmin=false;
   s.askingName=false;
   s.pendingChoice=false;
@@ -528,9 +535,9 @@ function renderApp(s){
   let html=`
     <div class="app-header">
       <div class="app-title-wrap">
-        <div class="app-icon"><i class="ti ti-tools-kitchen-2" style="font-size:18px;color:#0F6E56"></i></div>
+        <div class="app-icon"><img src="icons/icon-192.png" alt="ComiditApp" style="width:24px;height:24px;border-radius:6px"/></div>
         <div>
-          <div class="app-title">ComiditApp</div>
+          <div class="app-title" style="color:var(--color-text-primary,#1a1a1a)">Comidit<span style="color:#0F6E56">App</span></div>
           <div class="app-subtitle">${s.isAdmin?'Administración':'A la Mesa'}</div>
         </div>
       </div>
@@ -645,7 +652,7 @@ function renderDaySlide(s, day, idx){
     <div class="meal-card">${rows}</div>
     <div class="note-card">
       <i class="ti ti-pencil" style="font-size:15px;color:#ccc"></i>
-      <input type="text" placeholder="Nota del día (dieta blanda, sin ají…)"
+      <input type="text" placeholder="Nota del día (dieta blanda, bolsa, etc.…)"
         value="${note.replace(/"/g,'&quot;')}"
         ${locked?'disabled':''}
         onchange="setDayNote('${dk}',this.value)"/>
@@ -1080,10 +1087,10 @@ function renderAdmin(s){
       if(names[m].length){
         const lista=names[m].map(n=>{
           const c=colorForName(n.name);
-          return `<span class="ntag" style="background:${c.bg};border:1px solid ${c.border};color:${c.text}">${n.label}</span>`;
+          return `<span class="ntag"><span class="ntag-dot" style="background:${c.border}"></span>${n.label}</span>`;
         }).join(' ');
         html+=`<div class="admin-meal-line">
-          <span class="admin-meal-verb">${verbos[m]}:</span>
+          <span class="admin-meal-verb">${verbos[m]}</span>
           <span class="admin-meal-tags">${lista}</span>
         </div>`;
       }
@@ -1111,6 +1118,13 @@ function renderAdmin(s){
 const _s=gl();
 if(_s && (_s.userName || _s.isAdmin) && !_s.pendingChoice){ loadRemote(); } else { render(); }
 setInterval(()=>{ const ss=gl(); if(ss && (ss.userName||ss.isAdmin) && !ss.pendingChoice) loadRemote(); }, 60000);
+
+/* ════════ PWA: registrar service worker ════════ */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
