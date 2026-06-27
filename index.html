@@ -323,7 +323,7 @@ function jsonp(params){
       const tag = document.getElementById(cbName);
       if(tag) tag.remove();
       resolve({ok:false, error:'timeout'});
-    }, 10000);
+    }, 15000);
     window[cbName] = function(data){
       clearTimeout(timeout);
       delete window[cbName];
@@ -351,6 +351,7 @@ async function loadRemote(){
   if(res.ok){ remoteData=normalizeRemoteData(res.data||{}); lastSync=new Date(); syncStatus='ok'; }
   else { syncStatus='error'; }
   renderSyncBar();
+  retryPendingSaves();
   autoSyncTemplate();
   render();
 }
@@ -384,21 +385,68 @@ function autoSyncTemplate(){
   if(changed) sl(s);
 }
 
-async function saveRow(usuario,fecha,comida,estado,hora,nota){
-  await jsonp({action:'save',usuario,fecha,comida,estado,hora,nota});
+// Guarda una fila en el Sheet con reintentos automáticos.
+// Si tras varios intentos no se confirma, marca el dato como "pendiente"
+// para que la próxima sincronización lo vuelva a intentar, y avisa en pantalla.
+// Persistido en localStorage para sobrevivir si la app se cierra antes de confirmar.
+function loadPendingSaves(){
+  try{ return JSON.parse(localStorage.getItem('comiditapp_pending')||'{}'); }catch(e){ return {}; }
 }
+function savePendingSaves(obj){
+  localStorage.setItem('comiditapp_pending', JSON.stringify(obj));
+}
+const pendingSaves = loadPendingSaves();
+
+async function saveRow(usuario,fecha,comida,estado,hora,nota,attempt){
+  attempt = attempt || 1;
+  const key = usuario+'_'+fecha+'_'+comida;
+  const res = await jsonp({action:'save',usuario,fecha,comida,estado,hora,nota});
+  if(res && res.ok){
+    delete pendingSaves[key];
+    savePendingSaves(pendingSaves);
+    syncStatus = (Object.keys(pendingSaves).length>0) ? syncStatus : 'ok';
+    renderSyncBar();
+    return;
+  }
+  // Falló: reintentar hasta 3 veces con espera creciente
+  if(attempt < 3){
+    pendingSaves[key] = {usuario,fecha,comida,estado,hora,nota};
+    savePendingSaves(pendingSaves);
+    syncStatus='pending'; renderSyncBar();
+    setTimeout(()=>saveRow(usuario,fecha,comida,estado,hora,nota,attempt+1), attempt*2000);
+  } else {
+    // Falló definitivamente tras 3 intentos: queda marcado como pendiente
+    // y se reintentará en el próximo loadRemote() (ver retryPendingSaves)
+    pendingSaves[key] = {usuario,fecha,comida,estado,hora,nota};
+    savePendingSaves(pendingSaves);
+    syncStatus='pending'; renderSyncBar();
+  }
+}
+
 function schedSave(usuario,fecha,comida,estado,hora,nota){
   const key=usuario+'_'+fecha+'_'+comida;
   clearTimeout(saveTimers[key]);
   saveTimers[key]=setTimeout(()=>saveRow(usuario,fecha,comida,estado,hora,nota),900);
 }
 
+// Reintenta cualquier guardado que haya quedado pendiente,
+// cada vez que la app recupera conexión o se vuelve a abrir.
+function retryPendingSaves(){
+  Object.values(pendingSaves).forEach(p=>{
+    saveRow(p.usuario,p.fecha,p.comida,p.estado,p.hora,p.nota);
+  });
+}
+
 function renderSyncBar(){
   const el=document.getElementById('sync-strip');
   if(!el) return;
   let icon,msg;
+  const pendingCount = Object.keys(pendingSaves).length;
   if(syncStatus==='loading'){
     icon='<span class="sync-spin"><i class="ti ti-refresh"></i></span>'; msg='Sincronizando…';
+  } else if(pendingCount>0){
+    icon='<span class="sync-err"><i class="ti ti-clock"></i></span>';
+    msg='Guardando '+pendingCount+' cambio'+(pendingCount>1?'s':'')+'… reintentando';
   } else if(syncStatus==='ok'){
     icon='<span class="sync-ok"><i class="ti ti-circle-check"></i></span>';
     msg='Actualizado · '+(lastSync?lastSync.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}):'');
