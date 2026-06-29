@@ -348,7 +348,22 @@ function jsonp(params){
 async function loadRemote(){
   syncStatus='loading'; renderSyncBar();
   const res = await jsonp({action:'load'});
-  if(res.ok){ remoteData=normalizeRemoteData(res.data||{}); lastSync=new Date(); syncStatus='ok'; }
+  if(res.ok){
+    remoteData=normalizeRemoteData(res.data||{});
+    lastSync=new Date(); syncStatus='ok';
+    // Si el servidor devuelve plantillas (en res.templates), restaurar la del usuario actual
+    if(res.templates){
+      const s=gl();
+      if(s && s.userName && res.templates[s.userName]){
+        const serverTpl=res.templates[s.userName];
+        // Solo actualizar si el servidor tiene algo y local está vacío
+        if(!s.weekTemplate || !Object.keys(s.weekTemplate).length){
+          s.weekTemplate=serverTpl;
+          sl(s);
+        }
+      }
+    }
+  }
   else { syncStatus='error'; }
   renderSyncBar();
   retryPendingSaves();
@@ -937,12 +952,24 @@ function commitTplSheet(){
   if(!s.weekTemplate[dow]) s.weekTemplate[dow]={};
   s.weekTemplate[dow][meal]={state,time};
   sl(s);
+  // Sincronizar plantilla completa al servidor (con debounce de 1.5s)
+  clearTimeout(commitTplSheet._timer);
+  commitTplSheet._timer=setTimeout(()=>pushTemplate(s.userName, s.weekTemplate), 1500);
 }
 function clearTpl(){
   if(!confirm('¿Borrar toda tu semana tipo? Esto no afecta lo que ya tienes guardado en días concretos.')) return;
   const s=gl();
   s.weekTemplate={};
-  sl(s); render();
+  sl(s);
+  pushTemplate(s.userName, {});
+  render();
+}
+
+// Envía la plantilla semanal completa al servidor
+function pushTemplate(usuario, weekTemplate){
+  if(!usuario) return;
+  const plantilla = JSON.stringify(weekTemplate);
+  jsonp({action:'saveTemplate', usuario, plantilla}).catch(()=>{});
 }
 
 /* ════════ INVITADOS ════════ */
@@ -1166,7 +1193,13 @@ function renderAdmin(s){
 
 /* ════════ INIT ════════ */
 const _s=gl();
-if(_s && (_s.userName || _s.isAdmin) && !_s.pendingChoice){ loadRemote(); } else { render(); }
+if(_s && (_s.userName || _s.isAdmin) && !_s.pendingChoice){
+  loadRemote();
+  // Si el usuario tiene plantilla local, la sube al servidor (migración para usuarios existentes)
+  if(_s.userName && _s.weekTemplate && Object.keys(_s.weekTemplate).length){
+    setTimeout(()=>pushTemplate(_s.userName, _s.weekTemplate), 3000);
+  }
+} else { render(); }
 setInterval(()=>{ const ss=gl(); if(ss && (ss.userName||ss.isAdmin) && !ss.pendingChoice) loadRemote(); }, 60000);
 
 /* ════════ PWA: registrar service worker ════════ */
