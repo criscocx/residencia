@@ -669,11 +669,7 @@ function renderMiVistaCarousel(s){
 function goToDay(idx){
   if(idx<0||idx>6) return;
   currentDayIdx=idx;
-  const track=document.getElementById('day-track');
-  if(track) track.style.transform=`translateX(-${idx*100}%)`;
-  // re-render nav row + dots without losing transition
-  const s=gl();
-  setTimeout(()=>{ render(); }, 220);
+  render();
 }
 
 function renderDaySlide(s, day, idx){
