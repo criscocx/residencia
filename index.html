@@ -255,7 +255,14 @@ function initS(name){ const s={userName:name,bookings:{},dayNotes:{},guests:[],g
 
 /* ════════ HELPERS DE FECHA ════════ */
 function get7Days(){ const d=new Date(),r=[]; for(let i=0;i<7;i++){ const x=new Date(d); x.setDate(d.getDate()+i); r.push(x); } return r; }
-function dayKey(d){ return d.toISOString().slice(0,10); }
+function dayKey(d){
+  // Usar fecha LOCAL del dispositivo (no UTC) para evitar desfase de zona horaria.
+  // En Lima (UTC-5), a las 9pm el toISOString() devolvería la fecha del día siguiente.
+  const y  = d.getFullYear();
+  const m  = String(d.getMonth()+1).padStart(2,'0');
+  const dy = String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+dy;
+}
 function getDeadline(date){
   const dow=date.getDay();
   if(dow===0) return {h:10,m:0};
