@@ -1100,23 +1100,48 @@ function commitGuestSheet(){
 
 /* ════════ ADMINISTRACIÓN ════════ */
 function getAllForDay(s,dk,dayObj){
+  // El desayuno se guarda con la clave del día SIGUIENTE (dkNext)
+  // porque se come mañana pero se reporta hoy junto con almuerzo y cena
+  const nextDay=new Date(dayObj); nextDay.setDate(dayObj.getDate()+1);
+  const dkNext=dayKey(nextDay);
+
   const result=[];
   const allUsers=new Set(Object.keys(remoteData));
   if(s.userName) allUsers.add(s.userName);
   allUsers.forEach(usuario=>{
-    const remoteDay=(remoteData[usuario]&&remoteData[usuario][dk])||null;
-    const localDay=(usuario===s.userName)?(s.bookings[dk]||{}):null;
-    const dayData=remoteDay||localDay||{};
+    const remoteDay =(remoteData[usuario]&&remoteData[usuario][dk])||{};
+    const remoteNext=(remoteData[usuario]&&remoteData[usuario][dkNext])||{};
+    const localDay  =(usuario===s.userName)?(s.bookings[dk]||{}):{};
+    const localNext =(usuario===s.userName)?(s.bookings[dkNext]||{}):{};
+
     const entry={name:usuario,isGuest:false};
-    MEALS_ADMIN.forEach(m=>{ entry[m]=dayData[m]||{state:'off'}; });
+    MEALS_ADMIN.forEach(m=>{
+      if(m==='desayuno'){
+        // Desayuno: buscar en el día siguiente
+        entry[m]=(remoteNext[m]&&remoteNext[m].state!=='off' ? remoteNext[m] : null)
+               ||(localNext[m]&&localNext[m].state!=='off'  ? localNext[m]  : null)
+               ||{state:'off'};
+      } else {
+        // Almuerzo y cena: buscar en el día actual
+        entry[m]=(remoteDay[m]&&remoteDay[m].state!=='off' ? remoteDay[m] : null)
+               ||(localDay[m]&&localDay[m].state!=='off'   ? localDay[m]  : null)
+               ||{state:'off'};
+      }
+    });
     result.push(entry);
   });
+
   (s.guests||[]).forEach(g=>{
     const gKey=g.name+' (inv.)';
     if(allUsers.has(gKey)) return;
-    const gb=(s.guestBookings[dk]||{})[g.id]||{};
+    const gb   =(s.guestBookings[dk]||{})[g.id]||{};
+    const gbNext=(s.guestBookings[dkNext]||{})[g.id]||{};
     const ge={name:g.name+' (inv.)',isGuest:true};
-    MEALS_ADMIN.forEach(m=>{ ge[m]=gb[m]||{state:'off'}; });
+    MEALS_ADMIN.forEach(m=>{
+      ge[m]= m==='desayuno'
+        ? (gbNext[m]||{state:'off'})
+        : (gb[m]||{state:'off'});
+    });
     result.push(ge);
   });
   return result;
