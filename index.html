@@ -161,6 +161,113 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .add-btn{font-size:13px;color:#0F6E56;background:none;border:none;display:flex;align-items:center;gap:5px;font-weight:700;padding:4px 0}
 .guest-name-label{padding:8px 14px 2px;font-size:11px;color:#999;font-weight:700;border-top:0.5px solid rgba(0,0,0,0.06)}
 .section-title{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;margin:1rem 0 8px 2px}
+/* ── Cumpleaños ── */
+.bday-banner{background:linear-gradient(135deg,#FFF3CD,#FFE08A);border:1px solid #F0C040;border-radius:12px;padding:9px 14px;font-size:13px;font-weight:500;color:#7A5000;display:flex;align-items:center;gap:6px;margin-bottom:10px}
+
+/* ── Feriado color en Admin ── */
+.admin-card-date.feriado{color:#C0392B}
+
+/* ── Nuevo diseño high-end ── */
+html,body{background:#EFEDE6}
+.app-header{padding:calc(16px + env(safe-area-inset-top)) 18px 12px;display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:.5px solid rgba(0,0,0,.07);position:sticky;top:0;z-index:20}
+.app-title{font-size:16px;font-weight:700;color:#1a1a1a;letter-spacing:-.02em}
+.app-title span{color:#0F6E56}
+.app-subtitle{font-size:11px;color:#aaa;margin-top:1px;font-weight:500}
+.topbar-avatar{width:32px;height:32px;border-radius:50%;background:#0F6E56;color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.topbar-label{font-size:13px;font-weight:600;color:#0F6E56;margin-left:5px}
+
+/* Cards */
+.meal-card{background:#fff;border-radius:18px;border:.5px solid rgba(0,0,0,.1);overflow:hidden;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.meal-row-app{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:.5px solid rgba(0,0,0,.06)}
+.meal-row-app:last-child{border-bottom:none}
+.meal-icon-box{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.meal-icon-box.almuerzo{background:#E1F5EE;color:#0F6E56}
+.meal-icon-box.cena{background:#EDE8FB;color:#5B3FA0}
+.meal-icon-box.desayuno{background:#FAEEDA;color:#BA7517}
+.meal-name{font-size:15px;font-weight:600;letter-spacing:-.01em;line-height:1.3}
+.meal-status{font-size:12px;margin-top:2px;font-weight:500;display:flex;align-items:center;gap:4px}
+.meal-status.on{color:#0F6E56}
+.meal-status.early{color:#3B6D11}
+.meal-status.late{color:#854F0B}
+.meal-status.off{color:#bbb}
+.meal-chevron{color:#ccc;font-size:14px}
+.lock-badge{font-size:10px;color:#C0392B;font-weight:600;display:flex;align-items:center;gap:3px;margin-top:2px}
+
+/* Note card */
+.note-card{background:#fff;border-radius:14px;border:.5px solid rgba(0,0,0,.1);padding:11px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.note-card input{flex:1;border:none;background:transparent;font-size:13px;outline:none;font-family:inherit;color:#1a1a1a}
+.note-card input::placeholder{color:#ccc}
+.note-card input:disabled{opacity:.5}
+
+/* Day nav */
+.day-nav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.day-nav-btn{width:34px;height:34px;border-radius:50%;background:#fff;border:.5px solid rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.day-nav-btn:disabled{opacity:.25}
+.day-title-big{font-size:20px;font-weight:700;text-align:center;letter-spacing:-.02em}
+.day-title-sub{font-size:12px;color:#999;text-align:center;margin-top:2px;font-weight:500}
+
+/* Dots */
+.day-dots{display:flex;justify-content:center;gap:5px;padding:10px 0 6px}
+.day-dot{width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,.15);cursor:pointer;transition:all .2s}
+.day-dot.active{width:18px;border-radius:3px;background:#0F6E56}
+
+/* Admin */
+.admin-summary-card{background:#fff;border-radius:18px;border:.5px solid rgba(0,0,0,.1);overflow:hidden;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.admin-summary-hdr{padding:13px 16px 10px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:.5px solid rgba(0,0,0,.06)}
+.admin-summary-title{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.admin-summary-count{font-size:12px;color:#aaa;font-weight:500}
+.admin-counts-row{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:.5px solid rgba(0,0,0,.06)}
+.ac{padding:13px 8px 10px;text-align:center;border-right:.5px solid rgba(0,0,0,.06)}
+.ac:last-child{border-right:none}
+.ac-label{font-size:9px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.ac-num-wrap{display:flex;align-items:baseline;justify-content:center;gap:3px;flex-wrap:wrap;min-height:34px}
+.ac-num-main{font-size:27px;font-weight:800;color:#0F6E56;line-height:1;letter-spacing:-.03em}
+.ac-num-main.zero{color:#ddd;font-size:22px;font-weight:700}
+.ac-badge{font-size:10px;font-weight:700;padding:2px 5px;border-radius:7px;line-height:1.4;white-space:nowrap}
+.ac-badge.early{background:#EAF3DE;color:#3B6D11;border:1px solid #639922}
+.ac-badge.late{background:#FAEEDA;color:#854F0B;border:1px solid #BA7517}
+.admin-meal-line{padding:5px 16px 7px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;border-top:.5px solid rgba(0,0,0,.04);background:#FAFAF8}
+.admin-meal-verb{font-size:10px;font-weight:700;color:#aaa;white-space:nowrap;flex-shrink:0;text-transform:uppercase;letter-spacing:.04em}
+.admin-meal-tags{display:flex;flex-wrap:wrap;gap:4px}
+.ntag{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;background:#fff;border:.5px solid rgba(0,0,0,.12);color:#555;display:flex;align-items:center;gap:4px}
+.ntag-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.day-note-admin{font-size:11px;color:#854F0B;background:#FAEEDA;padding:7px 16px;border-top:.5px solid rgba(186,117,23,.12);display:flex;gap:6px;align-items:center}
+
+/* Sheet */
+.sheet-opt-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:14px;margin-bottom:7px;border:.5px solid rgba(0,0,0,.1);background:#fff}
+.sheet-opt-row.selected{border-color:#0F6E56;background:#E1F5EE}
+.sheet-opt-left{display:flex;align-items:center;gap:10px}
+.sheet-opt-icon{width:34px;height:34px;border-radius:10px;background:#f5f5f3;display:flex;align-items:center;justify-content:center;font-size:15px}
+.sheet-opt-row.selected .sheet-opt-icon{background:#fff}
+.sheet-opt-label{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.sheet-opt-row.selected .sheet-opt-label{color:#0F6E56}
+.sheet-opt-time{font-size:12px;color:#aaa;margin-top:1px}
+.sheet-check{width:20px;height:20px;border-radius:50%;background:#0F6E56;display:flex;align-items:center;justify-content:center}
+.sheet-close-btn{width:100%;padding:13px;border-radius:14px;background:#f5f5f3;border:.5px solid rgba(0,0,0,.1);font-size:14px;color:#666;font-weight:600;margin-top:8px;text-align:center;cursor:pointer}
+.sheet-time-row{display:flex;align-items:center;gap:10px;padding:10px 4px 4px;border-top:.5px solid rgba(0,0,0,.07);margin-top:6px}
+.sheet-time-input{flex:1;padding:8px 10px;border-radius:10px;border:.5px solid rgba(0,0,0,.15);font-size:13px;background:#fff;font-family:inherit;text-align:center}
+
+/* Welcome */
+.welcome-card{background:#fff;border-radius:24px;margin:16px;padding:36px 24px 28px;display:flex;flex-direction:column;align-items:center;gap:0;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.welcome-app-name{font-size:26px;font-weight:700;letter-spacing:-.03em;margin:16px 0 4px;color:#1a1a1a}
+.welcome-app-name span{color:#0F6E56}
+.welcome-tagline{font-size:13px;color:#aaa;margin-bottom:32px;font-weight:500}
+.welcome-btn-primary{width:100%;padding:15px;border-radius:16px;background:#0F6E56;color:#fff;border:none;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:9px;letter-spacing:-.01em;margin-bottom:10px}
+.welcome-btn-primary:active{background:#0a5a45}
+.welcome-btn-secondary{width:100%;padding:14px;border-radius:16px;background:#f5f5f3;color:#555;border:.5px solid rgba(0,0,0,.1);font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}
+.welcome-btn-secondary:active{background:#edebe4}
+.welcome-footer-link{margin-top:16px;font-size:12px;color:#aaa}
+.welcome-footer-link a{color:#0F6E56;font-weight:500}
+.welcome-avatar-small{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+
+/* Sync */
+.sync-strip{padding:6px 18px;background:#EAF3DE;border-bottom:.5px solid rgba(59,109,17,.12);display:flex;justify-content:space-between;align-items:center}
+.sync-ok{font-size:11px;color:#3B6D11;display:flex;align-items:center;gap:5px;font-weight:500}
+.sync-err{font-size:11px;color:#A32D2D;display:flex;align-items:center;gap:5px;font-weight:500}
+.sync-pending{font-size:11px;color:#854F0B;display:flex;align-items:center;gap:5px;font-weight:500}
+.sync-spin{animation:spin 1s linear infinite;display:inline-block}
+.sync-refresh{font-size:11px;color:#0F6E56;font-weight:600;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:3px}
+
 </style>
 </head>
 <body>
@@ -201,18 +308,62 @@ function getDT(date){
   return DEFAULT_TIMES_BY_DOW.lv;
 }
 function getDefaultTime(date,meal,state){
-  const dt=getDT(date);
+  // Feriados usan horario de domingo
+  const dt = esDomingoOFeriado(date) ? DEFAULT_TIMES_BY_DOW.dom : getDT(date);
   return dt[meal][state==='off'?'on':state]||'00:00';
 }
 const STATES      = ['off','on','early','late'];
 const STATE_LABEL = {off:'No come', on:'Normal', early:'Temprano', late:'Tarde'};
 const DAYS_ES     = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 const DAYS_ES_SHORT = ['dom','lun','mar','mié','jue','vie','sáb'];
+
+// ── FERIADOS PERUANOS ────────────────────────────────────
+// Formato: "MM-DD" → nombre. Perpetuos (todos los años).
+const FERIADOS_PERPETUOS = {
+  "01-01": "Año Nuevo",
+  "04-02": "Jueves Santo",    // 2026 — variable: Semana Santa
+  "04-03": "Viernes Santo",   // 2026 — variable: Semana Santa
+  "05-01": "Día del Trabajo",
+  "06-07": "Batalla de Arica · Día de la Bandera",
+  "06-29": "San Pedro y San Pablo",
+  "07-23": "Día de la Fuerza Aérea del Perú",
+  "07-28": "Fiestas Patrias",
+  "07-29": "Fiestas Patrias",
+  "08-06": "Batalla de Junín",
+  "08-30": "Santa Rosa de Lima",
+  "10-08": "Combate de Angamos",
+  "11-01": "Día de Todos los Santos",
+  "12-08": "Inmaculada Concepción",
+  "12-09": "Batalla de Ayacucho",
+  "12-25": "Navidad"
+};
+// Feriados solo para años específicos: "YYYY-MM-DD" → nombre
+const FERIADOS_ESPECIFICOS = {
+  "2026-07-27": "Feriado especial"
+};
+
+function getFeriado(dateObj){
+  // Formato YYYY-MM-DD para específicos
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth()+1).padStart(2,'0');
+  const d = String(dateObj.getDate()).padStart(2,'0');
+  const full = y+'-'+m+'-'+d;
+  const mmdd = m+'-'+d;
+  if(FERIADOS_ESPECIFICOS[full]) return FERIADOS_ESPECIFICOS[full];
+  if(FERIADOS_PERPETUOS[mmdd])   return FERIADOS_PERPETUOS[mmdd];
+  return null;
+}
+
+// Devuelve true si el día es domingo o feriado (→ horario especial)
+function esDomingoOFeriado(dateObj){
+  return dateObj.getDay()===0 || getFeriado(dateObj)!==null;
+}
 const MONTHS_ES   = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
-let currentTab = 'mi-vista';
+let currentTab = 'mi-calendario';
 let currentDayIdx = 0; // índice del día activo en el carrusel de Mi vista
 let remoteData  = {};
+let birthdaysData = {}; // { "usuario": "DD-MM" }
 let syncStatus  = 'idle';
 let lastSync    = null;
 let saveTimers  = {};
@@ -268,9 +419,9 @@ function dayKey(d){
   return y+'-'+m+'-'+dy;
 }
 function getDeadline(date){
-  const dow=date.getDay();
-  if(dow===0) return {h:10,m:0};
-  if(dow===6) return {h:9,m:15};
+  // Feriados y domingos: horario especial de domingo
+  if(esDomingoOFeriado(date)) return {h:10,m:0};
+  if(date.getDay()===6)       return {h:9,m:15};
   return {h:8,m:30};
 }
 function isMealLocked(date, meal){
@@ -361,6 +512,7 @@ async function loadRemote(){
   const res = await jsonp({action:'load'});
   if(res.ok){
     remoteData=normalizeRemoteData(res.data||{});
+    if(res.birthdays) birthdaysData=res.birthdays;
     lastSync=new Date(); syncStatus='ok';
     // Si el servidor devuelve plantillas (en res.templates), restaurar la del usuario actual
     if(res.templates){
@@ -493,6 +645,15 @@ function getTplState(s, dowDate, meal){
 }
 
 /* ════════ RENDER PRINCIPAL ════════ */
+
+// Devuelve lista de usuarios que cumplen años en la fecha dada
+function birthdaysForDate(dateObj){
+  const m = String(dateObj.getMonth()+1).padStart(2,'0');
+  const d = String(dateObj.getDate()).padStart(2,'0');
+  const mmdd = d+'-'+m; // formato DD-MM
+  return Object.keys(birthdaysData).filter(u => birthdaysData[u]===mmdd);
+}
+
 function render(){
   const s=gl();
   if(!s){ renderWelcome(null); return; }
@@ -528,7 +689,7 @@ function renderWelcome(s){
         <div class="welcome-icon"><img src="icons/icon-192.png" alt="ComiditApp" style="width:56px;height:56px;border-radius:14px"/></div>
         <div>
           <div class="welcome-title" style="color:var(--color-text-primary,#1a1a1a)">Comidit<span style="color:#0F6E56">App</span></div>
-          <div class="welcome-subtitle">A la Mesa · Residencia</div>
+          <div class="welcome-subtitle">Las Eras · Residencia</div>
         </div>
         <div class="welcome-actions">
           <button class="welcome-btn primary" onclick="enterAsUser('${savedName.replace(/'/g,"\\'")}')">
@@ -549,7 +710,7 @@ function renderWelcome(s){
       <div class="welcome-icon"><img src="icons/icon-192.png" alt="ComiditApp" style="width:56px;height:56px;border-radius:14px"/></div>
       <div>
         <div class="welcome-title" style="color:var(--color-text-primary,#1a1a1a)">Comidit<span style="color:#0F6E56">App</span></div>
-        <div class="welcome-subtitle">A la Mesa · Residencia</div>
+        <div class="welcome-subtitle">Las Eras · Residencia</div>
       </div>
       <div class="welcome-actions">
         <button class="welcome-btn primary" onclick="askName()"><i class="ti ti-user"></i> Soy residente</button>
@@ -614,7 +775,7 @@ function renderApp(s){
         <div class="app-icon"><img src="icons/icon-192.png" alt="ComiditApp" style="width:24px;height:24px;border-radius:6px"/></div>
         <div>
           <div class="app-title" style="color:var(--color-text-primary,#1a1a1a)">Comidit<span style="color:#0F6E56">App</span></div>
-          <div class="app-subtitle">${s.isAdmin?'Administración':'A la Mesa'}</div>
+          <div class="app-subtitle">${s.isAdmin?'Administración':'Las Eras'}</div>
         </div>
       </div>
       ${s.isAdmin?
@@ -628,7 +789,7 @@ function renderApp(s){
   if(!s.isAdmin){
     html+=`
       <div class="tabbar">
-        <button class="tabbar-item ${currentTab==='mi-vista'?'active':''}" onclick="switchTab('mi-vista')"><i class="ti ti-calendar"></i><span>Mi vista</span></button>
+        <button class="tabbar-item ${currentTab==='mi-calendario'?'active':''}" onclick="switchTab('mi-calendario')"><i class="ti ti-calendar"></i><span>Mi calendario</span></button>
         <button class="tabbar-item ${currentTab==='semana-tipo'?'active':''}" onclick="switchTab('semana-tipo')"><i class="ti ti-repeat"></i><span>Semana tipo</span></button>
         <button class="tabbar-item ${currentTab==='invitados'?'active':''}" onclick="switchTab('invitados')"><i class="ti ti-user-plus"></i><span>Invitados</span></button>
       </div>`;
@@ -639,7 +800,7 @@ function renderApp(s){
 
   const content=document.getElementById('content');
   if(s.isAdmin){ content.classList.remove('center-content'); content.innerHTML=renderAdmin(s); }
-  else if(currentTab==='mi-vista'){ content.classList.add('center-content'); content.innerHTML=renderMiVistaCarousel(s); attachSwipe(); }
+  else if(currentTab==='mi-calendario'){ content.classList.add('center-content'); content.innerHTML=renderMiVistaCarousel(s); attachSwipe(); }
   else if(currentTab==='semana-tipo'){ content.classList.remove('center-content'); content.innerHTML=renderSemanaTipo(s); }
   else { content.classList.remove('center-content'); content.innerHTML=renderInvitados(s); }
 }
@@ -664,8 +825,8 @@ function renderMiVistaCarousel(s){
     <div class="day-nav-row">
       <button class="day-nav-btn" onclick="goToDay(${currentDayIdx-1})" ${currentDayIdx===0?'disabled':''}><i class="ti ti-chevron-left"></i></button>
       <div>
-        <div class="day-title-big">${currentDayIdx===0?'Hoy':DAYS_ES[day.getDay()]}</div>
-        <div class="day-title-sub">${fmtDate(day)}</div>
+        <div class="day-title-big" style="${esDomingoOFeriado(day)?'color:#C0392B':''}">${currentDayIdx===0?'<span style="color:#0F6E56">Hoy</span>':DAYS_ES[day.getDay()]}</div>
+        <div class="day-title-sub" style="${esDomingoOFeriado(day)?'color:#C0392B':''}">${fmtDate(day)}${getFeriado(day)?' · '+getFeriado(day):''}</div>
       </div>
       <button class="day-nav-btn" onclick="goToDay(${currentDayIdx+1})" ${currentDayIdx===6?'disabled':''}><i class="ti ti-chevron-right"></i></button>
     </div>
@@ -720,7 +881,14 @@ function renderDaySlide(s, day, idx){
     </div>`;
   });
 
+  // Banner de cumpleaños
+  const bdayUsers = birthdaysForDate(day);
+  const bdayBanner = bdayUsers.length>0
+    ? `<div class="bday-banner">🎂 ¡Cumpleaños de ${bdayUsers.join(' y ')}!</div>`
+    : '';
+
   return `
+    ${bdayBanner}
     <div class="meal-card">${rows}</div>
     <div class="note-card">
       <i class="ti ti-pencil" style="font-size:15px;color:#ccc"></i>
@@ -1174,7 +1342,7 @@ function renderAdmin(s){
 
     html+=`<div class="admin-summary-card">
       <div class="admin-summary-hdr">
-        <span class="admin-summary-title">${idx===0?'Hoy · ':''}${fmtDate(day)}</span>
+        <span class="admin-summary-title" style="${esDomingoOFeriado(day)?'color:#C0392B':''}">${idx===0?'Hoy · ':''}${fmtDate(day)}${getFeriado(day)?' · <small>'+getFeriado(day)+'</small>':''}</span>
         <span class="admin-summary-count">${total} asist.</span>
       </div>
       <div class="admin-counts-row">`;
