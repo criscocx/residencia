@@ -284,33 +284,45 @@ const MEALS_ADMIN = ['almuerzo','cena','desayuno'];
 const MEAL_ICON   = {almuerzo:'<i class="ti ti-tools-kitchen-2"></i>',cena:'<i class="ti ti-moon"></i>',desayuno:'<i class="ti ti-sun"></i>'};
 const MEAL_LABEL  = {almuerzo:'Almuerzo', cena:'Cena', desayuno:'Desayuno'};
 
-const DEFAULT_TIMES_BY_DOW = {
-  lv: {
-    desayuno: {on:'07:30', early:'06:30', late:'09:00'},
-    almuerzo: {on:'13:30', early:'13:00', late:'15:00'},
-    cena:     {on:'20:30', early:'20:00', late:'21:45'}
-  },
-  sab: {
-    desayuno: {on:'08:00', early:'07:00', late:'09:30'},
-    almuerzo: {on:'13:30', early:'13:00', late:'15:00'},
-    cena:     {on:'20:30', early:'20:00', late:'21:45'}
-  },
-  dom: {
-    desayuno: {on:'09:00', early:'08:00', late:'09:45'},
-    almuerzo: {on:'13:30', early:'13:00', late:'15:00'},
-    cena:     {on:'20:00', early:'19:30', late:'21:45'}
-  }
+// Fallback si el servidor aún no devolvió horarios
+const DEFAULT_TIMES_FALLBACK = {
+  lv:  {desayuno:{on:'07:30',early:'06:30',late:'09:00'},
+         almuerzo:{on:'13:30',early:'13:00',late:'15:00'},
+         cena:    {on:'20:30',early:'20:00',late:'21:45'}},
+  sab: {desayuno:{on:'08:00',early:'07:00',late:'09:30'},
+         almuerzo:{on:'13:30',early:'13:00',late:'15:00'},
+         cena:    {on:'20:30',early:'20:00',late:'21:45'}},
+  dom: {desayuno:{on:'09:00',early:'08:00',late:'09:45'},
+         almuerzo:{on:'13:30',early:'13:00',late:'15:00'},
+         cena:    {on:'20:00',early:'19:30',late:'21:45'}},
 };
-function getDT(date){
-  const dow=date.getDay();
-  if(dow===0) return DEFAULT_TIMES_BY_DOW.dom;
-  if(dow===6) return DEFAULT_TIMES_BY_DOW.sab;
-  return DEFAULT_TIMES_BY_DOW.lv;
+
+function getDiaKey(dateObj){
+  if(esDomingoOFeriado(dateObj)) return 'dom';
+  if(dateObj.getDay()===6) return 'sab';
+  return 'lv';
 }
-function getDefaultTime(date,meal,state){
-  // Feriados usan horario de domingo
-  const dt = esDomingoOFeriado(date) ? DEFAULT_TIMES_BY_DOW.dom : getDT(date);
-  return dt[meal][state==='off'?'on':state]||'00:00';
+
+function getDefaultTime(date, meal, state){
+  const diaKey = getDiaKey(date);
+  const modo   = horariosModo || 'regular';
+  const times  = (horariosData && horariosData[modo] && horariosData[modo][diaKey] && horariosData[modo][diaKey][meal])
+                 || DEFAULT_TIMES_FALLBACK[diaKey][meal];
+  const st = (state==='off'||!state) ? 'on' : state;
+  return times[st] || times.on || '00:00';
+}
+
+function getDeadlineTime(dateObj){
+  const diaKey = getDiaKey(dateObj);
+  const modo   = horariosModo || 'regular';
+  const diaData = horariosData && horariosData[modo] && horariosData[modo][diaKey];
+  if(diaData && diaData.desayuno && diaData.desayuno.deadline){
+    const parts = diaData.desayuno.deadline.split(':').map(Number);
+    return {h: parts[0], m: parts[1]||0};
+  }
+  if(diaKey==='dom') return {h:10,m:0};
+  if(diaKey==='sab') return {h:9, m:15};
+  return {h:8,m:30};
 }
 const STATES      = ['off','on','early','late'];
 const STATE_LABEL = {off:'No come', on:'Normal', early:'Temprano', late:'Tarde'};
@@ -320,6 +332,32 @@ const DAYS_ES_SHORT = ['dom','lun','mar','mié','jue','vie','sáb'];
 // ── FESTIVIDADES — dinámicas desde el Sheet ──────────────
 // Array de { fecha:"DD-MM"|"YYYY-MM-DD", motivo, categoria, horarioDomingo }
 let festividades = [];
+let horariosModo  = 'regular'; // 'regular' | 'verano'
+let horariosData  = null;      // objeto completo del servidor
+
+
+// Normaliza formatos de fecha del Sheet: "26-06", "26/06", 2606, "2026-06-26"
+function normalizarFechaFestiv(raw){
+  if(!raw && raw!==0) return '';
+  let s = String(raw).trim();
+  // Número tipo 2606
+  if(/^\d{4}$/.test(s)) return s.slice(0,2)+'-'+s.slice(2,4);
+  // Con barra: 26/06
+  if(/^\d{1,2}\/\d{1,2}$/.test(s)){
+    const p=s.split('/');
+    return p[0].padStart(2,'0')+'-'+p[1].padStart(2,'0');
+  }
+  // YYYY-MM-DD
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  // DD-MM ya correcto
+  if(/^\d{2}-\d{2}$/.test(s)) return s;
+  // D-M sin padding
+  if(/^\d{1,2}-\d{1,2}$/.test(s)){
+    const p=s.split('-');
+    return p[0].padStart(2,'0')+'-'+p[1].padStart(2,'0');
+  }
+  return s;
+}
 
 function getFestividad(dateObj){
   const y  = dateObj.getFullYear();
@@ -407,10 +445,7 @@ function dayKey(d){
   return y+'-'+m+'-'+dy;
 }
 function getDeadline(date){
-  // Feriados y domingos: horario especial de domingo
-  if(esDomingoOFeriado(date)) return {h:10,m:0};
-  if(date.getDay()===6)       return {h:9,m:15};
-  return {h:8,m:30};
+  return getDeadlineTime(date);
 }
 function isMealLocked(date, meal){
   const now=new Date();
@@ -500,7 +535,17 @@ async function loadRemote(){
   const res = await jsonp({action:'load'});
   if(res.ok){
     remoteData=normalizeRemoteData(res.data||{});
-    if(res.festividades) festividades=res.festividades;
+    if(res.horarios){
+      horariosData = res.horarios;
+      horariosModo = res.horarios.modo || 'regular';
+    }
+    if(res.festividades){
+      // Normalizar fechas por si el Sheet devuelve formatos distintos (2606, 26/06, etc.)
+      festividades=res.festividades.map(f=>({
+        ...f,
+        fecha: normalizarFechaFestiv(f.fecha)
+      }));
+    }
     lastSync=new Date(); syncStatus='ok';
     // Si el servidor devuelve plantillas (en res.templates), restaurar la del usuario actual
     if(res.templates){
@@ -800,6 +845,26 @@ function renderApp(s){
 }
 
 function switchTab(t){ currentTab=t; render(); }
+
+
+// ── SWITCH HORARIO REGULAR / VERANO ─────────────────────
+async function toggleHorarioMode(){
+  const nuevoModo = horariosModo==='regular' ? 'verano' : 'regular';
+  const label = nuevoModo==='verano' ? 'VERANO' : 'REGULAR';
+  const msg = `¿Cambiar a horario de ${label.toLowerCase()} para TODOS los residentes?\n\nEsto afecta las horas de comida y el deadline de toda la residencia.`;
+  if(!confirm(msg)) return;
+  if(!confirm(`Confirma: activar horario ${label}`)) return;
+  // Guardar en servidor
+  const res = await jsonp({action:'setHorarioMode', modo:nuevoModo});
+  if(res && res.ok){
+    horariosModo = nuevoModo;
+    if(horariosData) horariosData.modo = nuevoModo;
+    render();
+    alert('Horario de '+label.toLowerCase()+' activado para todos.');
+  } else {
+    alert('Error al cambiar el horario. Inténtalo de nuevo.');
+  }
+}
 
 /* ════════ MI VISTA — CARRUSEL DE DÍAS ════════ */
 function renderMiVistaCarousel(s){
