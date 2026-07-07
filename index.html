@@ -541,10 +541,13 @@ function autoSyncTemplate(){
       if(hasRemote) return;
       const tplVal=getTplState(s, dowDate, m);
       if(!tplVal || tplVal.state==='off') return;
+      // SIEMPRE recalcular la hora con dowDate (el día que realmente se come)
+      // tplVal.time puede estar desfasado un día por bug anterior
+      const correctTime = getDefaultTime(dowDate, m, tplVal.state);
       if(!s.bookings[storeDk]) s.bookings[storeDk]={};
-      s.bookings[storeDk][m]={state:tplVal.state, time:tplVal.time};
+      s.bookings[storeDk][m]={state:tplVal.state, time:correctTime};
       const nota=(s.dayNotes&&s.dayNotes[storeDk])||'';
-      schedSave(s.userName, storeDk, m, tplVal.state, tplVal.time, nota);
+      schedSave(s.userName, storeDk, m, tplVal.state, correctTime, nota);
       changed=true;
     });
   });
@@ -855,7 +858,7 @@ function renderDaySlide(s, day, idx){
     if(info && info.state!==undefined){ st=info.state; t=info.time||getDefaultTime(dayForTime,m,st); }
     else {
       const tplVal=getTplState(s, dayForTime, m);
-      if(tplVal){ st=tplVal.state; t=tplVal.time||getDefaultTime(dayForTime,m,st); fromTpl=true; }
+      if(tplVal){ st=tplVal.state; t=getDefaultTime(dayForTime,m,st); fromTpl=true; }
       else { st='off'; t=getDefaultTime(dayForTime,m,st); }
     }
     const mLocked=isMealLocked(day,m);
@@ -1045,8 +1048,12 @@ function renderSemanaTipo(s){
       const info=tpl[m]||{state:'off'};
       const st=info.state||'off';
       const refDay=nextOccurrence(dow);
-      const dayForTime = m==='desayuno' ? (()=>{ const n=new Date(refDay); n.setDate(n.getDate()+1); return n; })() : refDay;
-      const t=info.time||getDefaultTime(dayForTime,m,st);
+      // Desayuno: usar el día SIGUIENTE de la tarjeta para calcular la hora correcta
+      const dayForTime = m==='desayuno'
+        ? nextOccurrence((dow+1)%7)
+        : refDay;
+      // SIEMPRE recalcular la hora para evitar datos corruptos del pasado
+      const t = getDefaultTime(dayForTime, m, st);
       const suffix = m==='desayuno' ? ` <small style="color:#aaa;font-weight:500">(día siguiente)</small>` : '';
       const statusText = st==='off' ? 'No come' : (STATE_LABEL[st]+' · '+fmtTime12(t));
       html+=`<div class="meal-row-app" onclick="openTplSheet(${dow},'${m}')">
@@ -1071,7 +1078,7 @@ function openTplSheet(dow, meal){
   const info=tpl[meal]||{state:'off'};
   const refDay=nextOccurrence(dow);
   const dayForTime = meal==='desayuno' ? (()=>{ const n=new Date(refDay); n.setDate(n.getDate()+1); return n; })() : refDay;
-  tplSheetCtx={dow, meal, dayForTime, state:info.state||'off', time:info.time||getDefaultTime(dayForTime,meal,info.state||'off')};
+  tplSheetCtx={dow, meal, dayForTime, state:info.state||'off', time:getDefaultTime(dayForTime,meal,info.state||'off')};
   renderTplSheet();
 }
 
