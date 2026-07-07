@@ -162,7 +162,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .guest-name-label{padding:8px 14px 2px;font-size:11px;color:#999;font-weight:700;border-top:0.5px solid rgba(0,0,0,0.06)}
 .section-title{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;margin:1rem 0 8px 2px}
 /* ── Cumpleaños ── */
-.bday-banner{background:linear-gradient(135deg,#FFF3CD,#FFE08A);border:1px solid #F0C040;border-radius:12px;padding:9px 14px;font-size:13px;font-weight:500;color:#7A5000;display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.festiv-banner{border:1px solid;border-radius:12px;padding:9px 14px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;margin-bottom:8px}
 
 /* ── Feriado color en Admin ── */
 .admin-card-date.feriado{color:#C0392B}
@@ -317,53 +317,41 @@ const STATE_LABEL = {off:'No come', on:'Normal', early:'Temprano', late:'Tarde'}
 const DAYS_ES     = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 const DAYS_ES_SHORT = ['dom','lun','mar','mié','jue','vie','sáb'];
 
-// ── FERIADOS PERUANOS ────────────────────────────────────
-// Formato: "MM-DD" → nombre. Perpetuos (todos los años).
-const FERIADOS_PERPETUOS = {
-  "01-01": "Año Nuevo",
-  "04-02": "Jueves Santo",    // 2026 — variable: Semana Santa
-  "04-03": "Viernes Santo",   // 2026 — variable: Semana Santa
-  "05-01": "Día del Trabajo",
-  "06-07": "Batalla de Arica · Día de la Bandera",
-  "06-29": "San Pedro y San Pablo",
-  "07-23": "Día de la Fuerza Aérea del Perú",
-  "07-28": "Fiestas Patrias",
-  "07-29": "Fiestas Patrias",
-  "08-06": "Batalla de Junín",
-  "08-30": "Santa Rosa de Lima",
-  "10-08": "Combate de Angamos",
-  "11-01": "Día de Todos los Santos",
-  "12-08": "Inmaculada Concepción",
-  "12-09": "Batalla de Ayacucho",
-  "12-25": "Navidad"
-};
-// Feriados solo para años específicos: "YYYY-MM-DD" → nombre
-const FERIADOS_ESPECIFICOS = {
-  "2026-07-27": "Feriado especial"
-};
+// ── FESTIVIDADES — dinámicas desde el Sheet ──────────────
+// Array de { fecha:"DD-MM"|"YYYY-MM-DD", motivo, categoria, horarioDomingo }
+let festividades = [];
 
-function getFeriado(dateObj){
-  // Formato YYYY-MM-DD para específicos
-  const y = dateObj.getFullYear();
-  const m = String(dateObj.getMonth()+1).padStart(2,'0');
-  const d = String(dateObj.getDate()).padStart(2,'0');
-  const full = y+'-'+m+'-'+d;
-  const mmdd = m+'-'+d;
-  if(FERIADOS_ESPECIFICOS[full]) return FERIADOS_ESPECIFICOS[full];
-  if(FERIADOS_PERPETUOS[mmdd])   return FERIADOS_PERPETUOS[mmdd];
+function getFestividad(dateObj){
+  const y  = dateObj.getFullYear();
+  const m  = String(dateObj.getMonth()+1).padStart(2,'0');
+  const d  = String(dateObj.getDate()).padStart(2,'0');
+  const full = y+'-'+m+'-'+d;  // YYYY-MM-DD
+  const ddmm = d+'-'+m;         // DD-MM (formato del sheet)
+  for(const f of festividades){
+    if(f.fecha===full || f.fecha===ddmm) return f;
+  }
   return null;
 }
 
-// Devuelve true si el día es domingo o feriado (→ horario especial)
+// true si usa horario de domingo (domingo real o feriado con horarioDomingo=true)
 function esDomingoOFeriado(dateObj){
-  return dateObj.getDay()===0 || getFeriado(dateObj)!==null;
+  if(dateObj.getDay()===0) return true;
+  const f=getFestividad(dateObj);
+  return f!==null && f.horarioDomingo===true;
+}
+
+// Emoji por categoría
+function emojiCategoria(cat){
+  if(cat==='feriado')    return '🇵🇪';
+  if(cat==='fiesta')     return '✝️';
+  if(cat==='cumpleanos') return '🎂';
+  return '📌';
 }
 const MONTHS_ES   = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
 let currentTab = 'mi-calendario';
 let currentDayIdx = 0; // índice del día activo en el carrusel de Mi vista
 let remoteData  = {};
-let birthdaysData = {}; // { "usuario": "DD-MM" }
 let syncStatus  = 'idle';
 let lastSync    = null;
 let saveTimers  = {};
@@ -512,7 +500,7 @@ async function loadRemote(){
   const res = await jsonp({action:'load'});
   if(res.ok){
     remoteData=normalizeRemoteData(res.data||{});
-    if(res.birthdays) birthdaysData=res.birthdays;
+    if(res.festividades) festividades=res.festividades;
     lastSync=new Date(); syncStatus='ok';
     // Si el servidor devuelve plantillas (en res.templates), restaurar la del usuario actual
     if(res.templates){
@@ -646,12 +634,15 @@ function getTplState(s, dowDate, meal){
 
 /* ════════ RENDER PRINCIPAL ════════ */
 
-// Devuelve lista de usuarios que cumplen años en la fecha dada
-function birthdaysForDate(dateObj){
-  const m = String(dateObj.getMonth()+1).padStart(2,'0');
-  const d = String(dateObj.getDate()).padStart(2,'0');
-  const mmdd = d+'-'+m; // formato DD-MM
-  return Object.keys(birthdaysData).filter(u => birthdaysData[u]===mmdd);
+// Devuelve festividades del día como array de {motivo, categoria, emoji}
+function festividadesDelDia(dateObj){
+  const y  = dateObj.getFullYear();
+  const m  = String(dateObj.getMonth()+1).padStart(2,'0');
+  const d  = String(dateObj.getDate()).padStart(2,'0');
+  const full = y+'-'+m+'-'+d;
+  const ddmm = d+'-'+m;
+  return festividades.filter(f => f.fecha===full || f.fecha===ddmm)
+    .map(f => ({...f, emoji: emojiCategoria(f.categoria)}));
 }
 
 function render(){
@@ -826,7 +817,7 @@ function renderMiVistaCarousel(s){
       <button class="day-nav-btn" onclick="goToDay(${currentDayIdx-1})" ${currentDayIdx===0?'disabled':''}><i class="ti ti-chevron-left"></i></button>
       <div>
         <div class="day-title-big" style="${esDomingoOFeriado(day)?'color:#C0392B':''}">${currentDayIdx===0?'<span style="color:#0F6E56">Hoy</span>':DAYS_ES[day.getDay()]}</div>
-        <div class="day-title-sub" style="${esDomingoOFeriado(day)?'color:#C0392B':''}">${fmtDate(day)}${getFeriado(day)?' · '+getFeriado(day):''}</div>
+        <div class="day-title-sub" style="${esDomingoOFeriado(day)?'color:#C0392B':''}">${fmtDate(day)}${getFestividad(day)?(' · '+getFestividad(day).emoji+' '+getFestividad(day).motivo):''}</div>
       </div>
       <button class="day-nav-btn" onclick="goToDay(${currentDayIdx+1})" ${currentDayIdx===6?'disabled':''}><i class="ti ti-chevron-right"></i></button>
     </div>
@@ -882,14 +873,16 @@ function renderDaySlide(s, day, idx){
     </div>`;
   });
 
-  // Banner de cumpleaños
-  const bdayUsers = birthdaysForDate(day);
-  const bdayBanner = bdayUsers.length>0
-    ? `<div class="bday-banner">🎂 ¡Cumpleaños de ${bdayUsers.join(' y ')}!</div>`
-    : '';
+  // Banners de festividades del día
+  const festivsHoy = festividadesDelDia(day);
+  const festivBanners = festivsHoy.map(f => {
+    const colorMap = {feriado:'#FEF3E2,#E8A838,#7A4500', fiesta:'#EEE8F8,#7B5EA7,#3D1F7A', cumpleanos:'#FFF3CD,#F0C040,#7A5000'};
+    const [bg,border,text] = (colorMap[f.categoria]||'#F5F5F5,#999,#333').split(',');
+    return `<div class="festiv-banner" style="background:${bg};border-color:${border};color:${text}">${f.emoji} ${f.motivo}</div>`;
+  }).join('');
 
   return `
-    ${bdayBanner}
+    ${festivBanners}
     <div class="meal-card">${rows}</div>
     <div class="note-card">
       <i class="ti ti-pencil" style="font-size:15px;color:#ccc"></i>
@@ -1343,7 +1336,7 @@ function renderAdmin(s){
 
     html+=`<div class="admin-summary-card">
       <div class="admin-summary-hdr">
-        <span class="admin-summary-title" style="${esDomingoOFeriado(day)?'color:#C0392B':''}">${idx===0?'Hoy · ':''}${fmtDate(day)}${getFeriado(day)?' · <small>'+getFeriado(day)+'</small>':''}</span>
+        <span class="admin-summary-title" style="${esDomingoOFeriado(day)?'color:#C0392B':''}">${idx===0?'Hoy · ':''}${fmtDate(day)}${getFestividad(day)?(' · <small>'+getFestividad(day).emoji+' '+getFestividad(day).motivo+'</small>'):''}</span>
         <span class="admin-summary-count">${total} asist.</span>
       </div>
       <div class="admin-counts-row">`;
