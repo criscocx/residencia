@@ -885,7 +885,7 @@ function renderApp(s){
 
   const content=document.getElementById('content');
   if(s.isAdmin){ content.classList.remove('center-content'); content.innerHTML=renderAdmin(s); }
-  else if(currentTab==='mi-calendario'){ content.classList.add('center-content'); content.innerHTML=renderMiVistaCarousel(s); attachSwipe(); }
+  else if(currentTab==='mi-calendario'){ content.classList.remove('center-content'); content.innerHTML=renderMiVistaCarousel(s); attachSwipe(); }
   else if(currentTab==='semana-tipo'){ content.classList.remove('center-content'); content.innerHTML=renderSemanaTipo(s); }
   else { content.classList.remove('center-content'); content.innerHTML=renderInvitados(s); }
 }
@@ -1027,12 +1027,15 @@ function renderMiVistaCarousel(s){
         ${slides}
       </div>
     </div>
-    <div class="day-dots">${dots}</div>`;
+    <div class="day-dots">${dots}</div>
+    ${renderMiniCal(s, days)}`;
 }
 
 function goToDay(idx){
   if(idx<0||idx>6) return;
   currentDayIdx=idx;
+  // Resetear vista de mes del calendario para seguir al día seleccionado
+  calViewYear=null; calViewMonth=null;
   render();
 }
 
