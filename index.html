@@ -161,6 +161,42 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .add-btn{font-size:13px;color:#0F6E56;background:none;border:none;display:flex;align-items:center;gap:5px;font-weight:700;padding:4px 0}
 .guest-name-label{padding:8px 14px 2px;font-size:11px;color:#999;font-weight:700;border-top:0.5px solid rgba(0,0,0,0.06)}
 .section-title{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;margin:1rem 0 8px 2px}
+/* ── Calendario mensual ── */
+.mini-cal{background:#fff;border-radius:16px;border:.5px solid rgba(0,0,0,.1);
+  padding:14px 12px 10px;margin-top:10px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-month{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.cal-nav{width:26px;height:26px;border-radius:50%;background:#f5f5f3;border:none;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:#555}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-dow{text-align:center;font-size:10px;font-weight:600;color:#bbb;
+  text-transform:uppercase;padding-bottom:4px;letter-spacing:.04em}
+.cal-dow.dom{color:#C0392B}
+.cal-day{text-align:center;padding:4px 2px;font-size:12px;font-weight:500;
+  border-radius:8px;cursor:pointer;color:#1a1a1a;transition:background .12s;line-height:1.8;
+  position:relative}
+.cal-day:active{background:#f0f0ee}
+.cal-day.other-month{color:#ccc}
+.cal-day.past{color:#ccc}
+.cal-day.today{background:#0F6E56;color:#fff;font-weight:700}
+.cal-day.today:active{background:#0a5a45}
+.cal-day.selected{background:#E1F5EE;color:#0F6E56;font-weight:700}
+.cal-day.selected.today{background:#0F6E56;color:#fff}
+.cal-day.festivo{color:#C0392B;font-weight:600}
+.cal-day.past.festivo{color:#e8a09a}
+.cal-day.today.festivo{background:#C0392B;color:#fff}
+.cal-day.has-dot::after{content:'';position:absolute;bottom:2px;left:50%;
+  transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:#0F6E56}
+.cal-day.today.has-dot::after{background:rgba(255,255,255,.7)}
+
+/* ── Switch horario regular/verano ── */
+.horario-strip{padding:3px 16px;font-size:11px;color:#bbb;background:var(--surface-2,#fff);
+  border-bottom:.5px solid rgba(0,0,0,.05);cursor:pointer;display:flex;align-items:center;gap:4px;
+  user-select:none;-webkit-tap-highlight-color:transparent}
+.horario-strip:active{background:#f5f5f3}
+.horario-strip strong{color:#888}
+.horario-strip.verano strong{color:#BA7517}
+
 /* ── Cumpleaños ── */
 .festiv-banner{border:1px solid;border-radius:12px;padding:9px 14px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;margin-bottom:8px}
 
@@ -538,6 +574,7 @@ async function loadRemote(){
     if(res.horarios){
       horariosData = res.horarios;
       horariosModo = res.horarios.modo || 'regular';
+      localStorage.setItem('comiditapp_horariomodo', horariosModo);
     }
     if(res.festividades){
       // Normalizar fechas por si el Sheet devuelve formatos distintos (2606, 26/06, etc.)
@@ -652,6 +689,12 @@ function retryPendingSaves(){
 }
 
 function renderSyncBar(){
+  // Actualizar también el horario-strip si existe
+  const hs=document.getElementById('horario-strip');
+  if(hs){
+    hs.innerHTML='⏱ Horario <strong>'+(horariosModo==='verano'?'de verano':'regular')+'</strong>';
+    hs.className='horario-strip'+(horariosModo==='verano'?' verano':'');
+  }
   const el=document.getElementById('sync-strip');
   if(!el) return;
   let icon,msg;
@@ -823,6 +866,9 @@ function renderApp(s){
       }
     </div>
     <div class="sync-strip" id="sync-strip">Cargando…</div>
+    ${!s.isAdmin?`<div class="horario-strip" id="horario-strip" onclick="toggleHorarioMode()">
+      ⏱ Horario <strong>${horariosModo==='verano'?'de verano':'regular'}</strong>
+    </div>`:''}
     <div class="content" id="content"></div>`;
 
   if(!s.isAdmin){
@@ -847,6 +893,92 @@ function renderApp(s){
 function switchTab(t){ currentTab=t; render(); }
 
 
+
+// ── CALENDARIO MENSUAL ───────────────────────────────────
+let calViewYear  = null; // null = usa el mes actual
+let calViewMonth = null;
+
+const MESES_ES = ['enero','febrero','marzo','abril','mayo','junio',
+                  'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const DOW_LABELS = ['Do','Lu','Ma','Mi','Ju','Vi','Sá'];
+
+function renderMiniCal(s, days){
+  const today = new Date();
+  const todayDk = dayKey(today);
+  const selectedDay = days[currentDayIdx];
+  const selectedDk  = dayKey(selectedDay);
+  // Mes a mostrar: el del día seleccionado por defecto
+  const viewYear  = calViewYear  !== null ? calViewYear  : selectedDay.getFullYear();
+  const viewMonth = calViewMonth !== null ? calViewMonth : selectedDay.getMonth();
+  const firstDay  = new Date(viewYear, viewMonth, 1);
+  const lastDay   = new Date(viewYear, viewMonth+1, 0);
+  const startDow  = firstDay.getDay(); // 0=domingo
+  // Días del mes anterior para completar la primera semana
+  const prevDays  = startDow; // celdas vacías antes del día 1
+  const totalCells= Math.ceil((prevDays + lastDay.getDate()) / 7) * 7;
+
+  // Cabecera
+  const prevMonth = viewMonth===0 ? {y:viewYear-1,m:11} : {y:viewYear,m:viewMonth-1};
+  const nextMonth = viewMonth===11? {y:viewYear+1,m:0}  : {y:viewYear,m:viewMonth+1};
+
+  let html = `<div class="mini-cal">
+    <div class="cal-header">
+      <button class="cal-nav" onclick="calGo(${prevMonth.y},${prevMonth.m})"><i class="ti ti-chevron-left"></i></button>
+      <span class="cal-month">${MESES_ES[viewMonth].charAt(0).toUpperCase()+MESES_ES[viewMonth].slice(1)} ${viewYear}</span>
+      <button class="cal-nav" onclick="calGo(${nextMonth.y},${nextMonth.m})"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <div class="cal-grid">`;
+
+  // Encabezados días semana (empieza en domingo)
+  DOW_LABELS.forEach((d,i)=>{
+    html+=`<div class="cal-dow ${i===0?'dom':''}">${d}</div>`;
+  });
+
+  // Celdas
+  for(let cell=0; cell<totalCells; cell++){
+    const dayNum = cell - prevDays + 1;
+    if(dayNum<1 || dayNum>lastDay.getDate()){
+      html+=`<div class="cal-day other-month"></div>`;
+      continue;
+    }
+    const cellDate = new Date(viewYear, viewMonth, dayNum, 12, 0, 0);
+    const cellDk   = dayKey(cellDate);
+    const cellDow  = cellDate.getDay();
+    const isToday    = cellDk===todayDk;
+    const isSelected = cellDk===selectedDk;
+    const isPast     = cellDate < new Date(today.getFullYear(),today.getMonth(),today.getDate());
+    const isFestivo  = cellDow===0 || (getFestividad(cellDate)&&getFestividad(cellDate).horarioDomingo);
+    const isFiesta   = !isFestivo && getFestividad(cellDate)!==null;
+    // Dot si tiene alguna selección
+    const hasDot = (s.bookings[cellDk]&&Object.values(s.bookings[cellDk]).some(b=>b&&b.state&&b.state!=='off'));
+
+    // Determinar si está en los 7 días navegables
+    const dayIdxInCarousel = days.findIndex(d=>dayKey(d)===cellDk);
+    const isNavigable = dayIdxInCarousel>=0;
+
+    let cls = 'cal-day';
+    if(isPast&&!isToday) cls+=' past';
+    if(isFestivo)        cls+=' festivo';
+    if(isToday)          cls+=' today';
+    if(isSelected&&!isToday) cls+=' selected';
+    if(hasDot)           cls+=' has-dot';
+
+    const onclick = isNavigable ? `onclick="goToDay(${dayIdxInCarousel})"` : '';
+    const dot = isFiesta ? '<span style="position:absolute;top:2px;right:3px;font-size:7px">✝</span>' : '';
+
+    html+=`<div class="${cls}" style="position:relative" ${onclick}>${dayNum}${dot}</div>`;
+  }
+
+  html+=`</div></div>`;
+  return html;
+}
+
+function calGo(year, month){
+  calViewYear  = year;
+  calViewMonth = month;
+  render();
+}
+
 // ── SWITCH HORARIO REGULAR / VERANO ─────────────────────
 async function toggleHorarioMode(){
   const nuevoModo = horariosModo==='regular' ? 'verano' : 'regular';
@@ -859,6 +991,7 @@ async function toggleHorarioMode(){
   if(res && res.ok){
     horariosModo = nuevoModo;
     if(horariosData) horariosData.modo = nuevoModo;
+    localStorage.setItem('comiditapp_horariomodo', nuevoModo);
     render();
     alert('Horario de '+label.toLowerCase()+' activado para todos.');
   } else {
@@ -1459,9 +1592,12 @@ function renderAdmin(s){
 
 /* ════════ INIT ════════ */
 const _s=gl();
+// Recuperar modo horario guardado localmente (para no esperar al servidor)
+const _savedModo = localStorage.getItem('comiditapp_horariomodo');
+if(_savedModo) horariosModo = _savedModo;
+
 if(_s && (_s.userName || _s.isAdmin) && !_s.pendingChoice){
   loadRemote();
-  // Si el usuario tiene plantilla local, la sube al servidor (migración para usuarios existentes)
   if(_s.userName && _s.weekTemplate && Object.keys(_s.weekTemplate).length){
     setTimeout(()=>pushTemplate(_s.userName, _s.weekTemplate), 3000);
   }
