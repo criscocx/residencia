@@ -419,7 +419,7 @@ function emojiCategoria(cat){
   if(cat==='feriado')    return '🇵🇪';
   if(cat==='fiesta')     return '✝️';
   if(cat==='cumpleanos') return '🎂';
-  return '📌';
+  return '🎂';
 }
 const MONTHS_ES   = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
@@ -577,10 +577,13 @@ async function loadRemote(){
       localStorage.setItem('comiditapp_horariomodo', horariosModo);
     }
     if(res.festividades){
-      // Normalizar fechas por si el Sheet devuelve formatos distintos (2606, 26/06, etc.)
       festividades=res.festividades.map(f=>({
         ...f,
-        fecha: normalizarFechaFestiv(f.fecha)
+        fecha: normalizarFechaFestiv(f.fecha),
+        // Normalizar categoria: quitar tildes, espacios, minúsculas
+        categoria: String(f.categoria||'').trim().toLowerCase()
+          .replace('cumpleaños','cumpleanos')
+          .replace('años','anos')
       }));
     }
     lastSync=new Date(); syncStatus='ok';
@@ -1275,7 +1278,7 @@ function renderSemanaTipo(s){
     });
     html+=`</div>`;
   });
-  html+=`<button class="add-btn" onclick="clearTpl()"><i class="ti ti-trash"></i> Borrar toda mi semana tipo</button>`;
+  html+=`<button class="add-btn" onclick="clearTpl()" style="margin-bottom:80px"><i class="ti ti-trash"></i> Borrar toda mi semana tipo</button>`;
   return html;
 }
 
