@@ -950,26 +950,29 @@ function renderMiniCal(s, days){
     const isToday    = cellDk===todayDk;
     const isSelected = cellDk===selectedDk;
     const isPast     = cellDate < new Date(today.getFullYear(),today.getMonth(),today.getDate());
-    const isFestivo  = cellDow===0 || (getFestividad(cellDate)&&getFestividad(cellDate).horarioDomingo);
-    const isFiesta   = !isFestivo && getFestividad(cellDate)!==null;
-    // Dot si tiene alguna selección
+    // Recoger TODAS las festividades del día
+    const festivsDelDia = festividadesDelDia(cellDate);
+    const tieneFeriado  = cellDow===0 || festivsDelDia.some(f=>f.horarioDomingo===true);
+    const tieneFiesta   = festivsDelDia.some(f=>f.categoria==='fiesta');
+    const tieneCumple   = festivsDelDia.some(f=>f.categoria==='cumpleanos');
     const hasDot = (s.bookings[cellDk]&&Object.values(s.bookings[cellDk]).some(b=>b&&b.state&&b.state!=='off'));
-
-    // Determinar si está en los 7 días navegables
     const dayIdxInCarousel = days.findIndex(d=>dayKey(d)===cellDk);
     const isNavigable = dayIdxInCarousel>=0;
 
     let cls = 'cal-day';
     if(isPast&&!isToday) cls+=' past';
-    if(isFestivo)        cls+=' festivo';
+    if(tieneFeriado)     cls+=' festivo';
     if(isToday)          cls+=' today';
     if(isSelected&&!isToday) cls+=' selected';
     if(hasDot)           cls+=' has-dot';
 
-    const onclick = isNavigable ? `onclick="goToDay(${dayIdxInCarousel})"` : '';
-    const dot = isFiesta ? '<span style="position:absolute;top:2px;right:3px;font-size:7px">✝</span>' : '';
+    // Emoji superpuesto: cumpleaños > fiesta; se muestra aunque haya feriado
+    let overlay='';
+    if(tieneCumple)     overlay='<span style="position:absolute;top:0;right:1px;font-size:8px;line-height:1">🎂</span>';
+    else if(tieneFiesta) overlay='<span style="position:absolute;top:0;right:1px;font-size:8px;line-height:1">✝</span>';
 
-    html+=`<div class="${cls}" style="position:relative" ${onclick}>${dayNum}${dot}</div>`;
+    const onclick = isNavigable ? `onclick="goToDay(${dayIdxInCarousel})"` : '';
+    html+=`<div class="${cls}" style="position:relative" ${onclick}>${dayNum}${overlay}</div>`;
   }
 
   html+=`</div></div>`;
